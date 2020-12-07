@@ -6,9 +6,12 @@
   android:layout_height="match_parent"
   tools:context=".activities.MainActivity">
 
+  <include android:id="@+id/toolbar_support_main"
+    layout="@layout/toolbar" />
+
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/sensors_recyclerview"
-    android:layout_width="411dp"
+    android:layout_width="0dp"
     android:layout_height="0dp"
     app:layout_constraintBottom_toTopOf="@+id/button_add_sensor"
     app:layout_constraintEnd_toEndOf="parent"
@@ -22,7 +25,7 @@
     android:text="ESPGUARD"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    app:layout_constraintTop_toBottomOf="@+id/toolbar_support_main" />
 
   <Button
     android:id="@+id/button_add_sensor"

@@ -1,13 +1,11 @@
 package li.kta.espguard
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
-import li.kta.espguard.activities.ConfigureSensorActivity
-import li.kta.espguard.activities.MainActivity
+
 import li.kta.espguard.room.SensorEntity
 
 class SensorAdapter(private var listener: SensorAdapterListener) : RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
