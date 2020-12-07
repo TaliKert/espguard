@@ -1,5 +1,6 @@
 package li.kta.espguard.activities
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -23,26 +24,39 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         model = ViewModelProvider(this).get(SensorViewModel::class.java)
-
-        testDb()
-
+        //testDb()
         createAdapter()
+
+        button_add_sensor.setOnClickListener{ openNewSensorView()}
+    }
+
+    private fun openNewSensorView() {
+        startActivity(Intent(this, AddSensorActivity::class.java))
+    }
+
+    private fun openSensorConfiguration(sensor: SensorEntity) {
+        val intent = Intent(this, ConfigureSensorActivity::class.java)
+        intent.putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id)
+        startActivity(intent)
     }
 
     private fun createAdapter() {
-        sensorAdapter = SensorAdapter()
+        sensorAdapter = SensorAdapter(
+            object : SensorAdapter.SensorAdapterListener {
+                override fun onButtonClick(sensor: SensorEntity) {
+                    openSensorConfiguration(sensor)
+                }
+            }
+        )
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
+        sensorAdapter.data = model.sensorArray
     }
 
     
     fun testDb() {
         // instance of db
-        val db = Room.databaseBuilder(
-            applicationContext, LocalSensorDb::class.java, "mySensors")
-            .fallbackToDestructiveMigration() // each time schema changes, data is lost!
-            .allowMainThreadQueries() // if possible, use background thread instead
-            .build()
+        val db = LocalSensorDb.getInstance(this)
 
         // insert 1 sensor
         val sensor = SensorEntity(0, true)

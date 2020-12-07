@@ -1,15 +1,26 @@
 package li.kta.espguard
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
+import li.kta.espguard.activities.ConfigureSensorActivity
+import li.kta.espguard.activities.MainActivity
 import li.kta.espguard.room.SensorEntity
 
-class SensorAdapter() : RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
+class SensorAdapter(private var listener: SensorAdapterListener) : RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
+
+  interface SensorAdapterListener {
+    fun onButtonClick(sensor: SensorEntity)
+  }
 
   var data = arrayOf<SensorEntity>()
+    set(value) {
+      field = value
+      notifyDataSetChanged()
+    }
 
   inner class SensorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
@@ -27,8 +38,10 @@ class SensorAdapter() : RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
 
     holder.itemView.apply {
       tv_name.text = sensor.id.toString()
+      button_configure.setOnClickListener{ listener.onButtonClick(sensor) }
     }
 
-    }
+  }
+
 }
 
