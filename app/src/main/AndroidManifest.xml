@@ -14,9 +14,9 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:supportsRtl="true"
       android:theme="@style/Theme.Espguard">
-        <activity android:name=".ConfigureSensorActivity"></activity>
-        <activity android:name=".AddSensorActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".activities.ConfigureSensorActivity" />
+        <activity android:name=".activities.AddSensorActivity" />
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
