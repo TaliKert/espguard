@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.event_list_item.view.*
 import li.kta.espguard.room.EventEntity
+import java.util.*
 
 
 class EventAdapter(private val sensorId: Int, private val applicationContext: Context)
@@ -16,9 +17,9 @@ class EventAdapter(private val sensorId: Int, private val applicationContext: Co
     companion object {
         val TAG: String = EventAdapter::class.java.name
 
-        val mockEvents: ArrayList<EventEntity> =
-                listOf(0 to "TIME0", 0 to "TIME01", 1 to "TIME10", 1 to "TIME11", 1 to "TIME12")
-                        .mapTo(arrayListOf()) { EventEntity(sensorId = it.first, time = it.second) }
+        val mockEvents: ArrayList<EventEntity> = listOf("ID", "ID", "ID")
+                .map { it to Calendar.getInstance().time }
+                .mapTo(arrayListOf()) { EventEntity(deviceId = it.first, event_time = it.second) }
     }
 
     /*private var events: ArrayList<EventEntity> = arrayListOf()*/
@@ -39,7 +40,7 @@ class EventAdapter(private val sensorId: Int, private val applicationContext: Co
 
         holder.itemView.apply {
             event_id.text = event.id.toString()
-            event_time.text = event.time.toString()
+            event_time.text = event.event_time.toString()
         }
     }
 
