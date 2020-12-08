@@ -18,8 +18,7 @@ class EventAdapter(private val sensorId: Int, private val applicationContext: Co
         val TAG: String = EventAdapter::class.java.name
 
         val mockEvents: ArrayList<EventEntity> = listOf("ID", "ID", "ID")
-                .map { it to Calendar.getInstance().time }
-                .mapTo(arrayListOf()) { EventEntity(deviceId = it.first, event_time = it.second) }
+                .mapTo(arrayListOf()) { EventEntity(0, deviceId = it, event_time = System.currentTimeMillis()) }
     }
 
     /*private var events: ArrayList<EventEntity> = arrayListOf()*/

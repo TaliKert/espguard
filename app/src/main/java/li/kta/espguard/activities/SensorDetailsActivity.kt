@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_sensor_details.*
@@ -35,7 +36,32 @@ class SensorDetailsActivity : AppCompatActivity() {
 
         createAdapter(id)
 
-        button_add_sensor.setOnClickListener { openSensorConfiguration(id) }
+        button_configure_device.setOnClickListener { openSensorConfiguration(id) }
+        button_delete_device.setOnClickListener { deleteSensor(id) }
+
+    }
+
+    private fun deleteSensor(id: Int) {
+
+        val sensor = LocalSensorDb.getInstance(applicationContext).getSensorDao().findSensorById(id)
+
+        removeEventsFromDatabase(sensor)
+        removeSensorFromDatabase(sensor)
+
+        Toast.makeText(this, "Deleted device", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private fun removeEventsFromDatabase(sensor: SensorEntity) {
+        sensor.deviceId?.let {
+            val events =
+                LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(it)
+            LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
+        }
+    }
+
+    private fun removeSensorFromDatabase(sensor: SensorEntity) {
+        LocalSensorDb.getInstance(applicationContext).getSensorDao().deleteSensor(sensor)
     }
 
     override fun onResume() {
@@ -60,16 +86,16 @@ class SensorDetailsActivity : AppCompatActivity() {
         getSensorEntity(sensorId)?.let { openSensorConfiguration(it) }
     }
 
-    /* TODO: TEMPORARY METHOD, HAS TO BE REPLACED WITH DAO METHOD */
-    private fun getSensorEntity(sensorId: Int): SensorEntity? =
-            LocalSensorDb.getInstance(applicationContext).getSensorDao().loadSensors()
-                    .find { it.id == sensorId }
+    private fun getSensorEntity(sensorId: Int): SensorEntity? {
+        return LocalSensorDb.getInstance(applicationContext).getSensorDao().findSensorById(sensorId)
+    }
+
 
     private fun openSensorConfiguration(sensor: SensorEntity) {
         Log.i(TAG, "Opening configurations view for sensor $sensor")
         startActivity(
-                Intent(this, ConfigureSensorActivity::class.java)
-                        .apply { putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id) })
+            Intent(this, ConfigureSensorActivity::class.java)
+                .apply { putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id) })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

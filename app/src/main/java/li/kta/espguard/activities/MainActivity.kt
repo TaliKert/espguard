@@ -35,21 +35,21 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar_support_main))
 
         model = ViewModelProvider(this).get(SensorViewModel::class.java)
-        //testDb()
         createAdapter()
 
         mqttService = MqttService(this, model.sensorArray)
         mqttService.initialize()
 
-        button_add_sensor.setOnClickListener{ openNewSensorView()}
+        button_configure_device.setOnClickListener { openNewSensorView() }
     }
 
-    override fun onResume(){
+    override fun onResume() {
         super.onResume()
 
         model.refresh()
         sensorAdapter.data = model.sensorArray
     }
+
     override fun onDestroy() {
         mqttService.destroy()
         super.onDestroy()
@@ -82,36 +82,23 @@ class MainActivity : AppCompatActivity() {
     private fun openSensorDetailsView(sensor: SensorEntity) {
         Log.i(TAG, "Opening details view for sensor $sensor")
         startActivity(
-                Intent(this, SensorDetailsActivity::class.java)
-                        .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
+            Intent(this, SensorDetailsActivity::class.java)
+                .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
     }
 
     private fun createAdapter() {
         sensorAdapter = SensorAdapter(
-                object : SensorAdapter.SensorAdapterListener {
-                    override fun onButtonClick(sensor: SensorEntity) {
-                        openSensorDetailsView(sensor)
-                    }
+            object : SensorAdapter.SensorAdapterListener {
+                override fun onButtonClick(sensor: SensorEntity) {
+                    openSensorDetailsView(sensor)
                 }
+            }
         )
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
         sensorAdapter.data = model.sensorArray
     }
 
-    
-    fun testDb() {
-        // instance of db
-        val db = LocalSensorDb.getInstance(this)
-
-        // insert 1 sensor
-        val sensor = SensorEntity(0, "test sensor", "test name" ,false)
-
-        db.getSensorDao().insertSensors(sensor)
-        db.getSensorDao().loadSensors().forEach {
-            Log.i("RoomTest", "Sensor ${it.deviceId}")
-        }
-    }
 
     fun testDbEvents() {
         val dao = LocalSensorDb.getInstance(this).getSensorDao()

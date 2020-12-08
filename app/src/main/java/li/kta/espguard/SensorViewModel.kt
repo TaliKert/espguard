@@ -15,7 +15,7 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
   }
 
   fun refresh(){
-    sensorArray = localDb.getSensorDao().loadSensors()
+    sensorArray = localDb.getSensorDao().loadAllSensors()
   }
 
 }

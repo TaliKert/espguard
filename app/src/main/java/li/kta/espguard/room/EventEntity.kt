@@ -6,8 +6,7 @@ import java.util.*
 
 @Entity(tableName = "event")
 data class EventEntity(
-        @PrimaryKey(autoGenerate = true)
-        var id: Int = 0,
-        var deviceId: String?,
-        val event_time: Date?
+    @PrimaryKey(autoGenerate = true) var id: Int,
+    var deviceId: String?,
+    var event_time: Long?
 )

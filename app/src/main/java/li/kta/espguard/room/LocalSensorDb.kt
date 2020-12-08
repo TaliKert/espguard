@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [SensorEntity::class], version = 3)
+@Database(entities = [SensorEntity::class, EventEntity::class], version = 3)
 abstract class LocalSensorDb: RoomDatabase() {
 
   companion object {
@@ -15,7 +15,7 @@ abstract class LocalSensorDb: RoomDatabase() {
         fun getInstance(context: Context): LocalSensorDb {
             if (this::dbInstance.isInitialized) return dbInstance
 
-            dbInstance = Room.databaseBuilder(context, LocalSensorDb::class.java, "mySensors")
+            dbInstance = Room.databaseBuilder(context, LocalSensorDb::class.java, "myDatabase")
                     .fallbackToDestructiveMigration() // each time schema changes, data is lost!
                     .allowMainThreadQueries() // if possible, use background thread instead
                     .build()
@@ -25,5 +25,7 @@ abstract class LocalSensorDb: RoomDatabase() {
     }
 
   abstract fun getSensorDao(): SensorDao
+
+  abstract fun getEventDao(): EventDao
 
 }
