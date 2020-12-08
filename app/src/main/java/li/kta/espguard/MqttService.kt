@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.room.Room
+import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
@@ -37,6 +39,25 @@ class MqttService (
     private const val SENSOR_CONFIG_TOPIC_PREFIX = "espguard/config/"
 
     const val STATUS_RESPONSE_ACTION= "li.kta.status.response"
+
+    private lateinit var mqttService: MqttService
+
+    fun initializeMqttService(context: Context, sensors: Array<SensorEntity>) {
+      mqttService = MqttService(context, sensors)
+      mqttService.initialize()
+      Log.i(TAG, "MqttService initialized")
+    }
+
+    fun destroyMqttService() {
+      mqttService.destroy()
+      Log.i(TAG, "MqttService destroyed")
+    }
+
+    fun getInstance(): MqttService? {
+      if (this::mqttService.isInitialized)
+        return mqttService
+      return null
+    }
   }
 
   private lateinit var mqttClient: MqttAndroidClient
@@ -64,6 +85,7 @@ class MqttService (
 
   public fun healthCheck(sensor: SensorEntity) {
     mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, MqttMessage())
+    Log.i(TAG, "Sent health check msg to ${sensor.name}")
   }
 
   /**
@@ -73,7 +95,7 @@ class MqttService (
     Log.i(TAG, "MQTT Connected")
     Toast.makeText(context, "MQTT Connected, subscribing...", Toast.LENGTH_SHORT).show()
     for (sensor in sensors) {
-      mqttClient.subscribe(SENSOR_STATUS_TOPIC_PREFIX + sensor.deviceId, 1)
+      subscribe(sensor)
     }
   }
 

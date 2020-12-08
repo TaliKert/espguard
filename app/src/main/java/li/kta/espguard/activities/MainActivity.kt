@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
-    private lateinit var mqttService: MqttService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -46,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         model = ViewModelProvider(this).get(SensorViewModel::class.java)
         createAdapter()
 
-        setupMqttService()
+        MqttService.initializeMqttService(this, model.sensorArray)
 
         button_add_device.setOnClickListener { openNewSensorView() }
     }
@@ -59,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        mqttService.destroy()
+        MqttService.destroyMqttService()
         super.onDestroy()
     }
 
@@ -105,11 +104,6 @@ class MainActivity : AppCompatActivity() {
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
         sensorAdapter.data = model.sensorArray
-    }
-
-    private fun setupMqttService() {
-        mqttService = MqttService(this, model.sensorArray)
-        mqttService.initialize()
     }
 
 
