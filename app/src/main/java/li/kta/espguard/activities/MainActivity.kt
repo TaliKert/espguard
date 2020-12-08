@@ -17,7 +17,16 @@ import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
-
+/** TODO
+ *    - Create status message broadcast and receiver to handle
+ *      health check responses.
+ *    - Node configuration communication
+ *      * Turn off/on
+ *      * Time of day
+ *      * cooldown period (how long to wait until next alert)
+ *    - Firebase cloud messaging!
+ *    - More settings
+ */
 class MainActivity : AppCompatActivity() {
     companion object {
         val TAG: String = MainActivity::class.java.name
@@ -38,8 +47,7 @@ class MainActivity : AppCompatActivity() {
         //testDb()
         createAdapter()
 
-        mqttService = MqttService(this, model.sensorArray)
-        mqttService.initialize()
+        setupMqttService()
 
         button_add_sensor.setOnClickListener{ openNewSensorView()}
     }
@@ -99,7 +107,11 @@ class MainActivity : AppCompatActivity() {
         sensorAdapter.data = model.sensorArray
     }
 
-    
+    private fun setupMqttService() {
+        mqttService = MqttService(this, model.sensorArray)
+        mqttService.initialize()
+    }
+
     fun testDb() {
         // instance of db
         val db = LocalSensorDb.getInstance(this)

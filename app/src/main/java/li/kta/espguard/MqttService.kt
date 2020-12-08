@@ -36,7 +36,7 @@ class MqttService (
     private const val SENSOR_HEALTH_TOPIC_PREFIX = "espguard/health/"
     private const val SENSOR_CONFIG_TOPIC_PREFIX = "espguard/config/"
 
-    const val STATUS_RESPONSE_ACTION_PREFIX = "li.kta.status.response"
+    const val STATUS_RESPONSE_ACTION= "li.kta.status.response"
   }
 
   private lateinit var mqttClient: MqttAndroidClient
@@ -82,7 +82,7 @@ class MqttService (
     if (topic != null) {
       val deviceId = topic.split("/").last()
       context.sendBroadcast(
-        Intent(STATUS_RESPONSE_ACTION_PREFIX + deviceId)
+        Intent(STATUS_RESPONSE_ACTION)
           .putExtra("deviceId", deviceId)
           .putExtra("message", message.toString())
       )
