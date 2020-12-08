@@ -47,11 +47,11 @@ void setup() {
   // Connect to MQTT server
   mqttClient.setServer(mqttServer, 1883);
 
-  pinMode(SENSOR_PIN, INPUT);
+  pinMode(SENSOR_PIN, INPUT_PULLUP);
   pinMode(LED_PIN, OUTPUT);
 //  pinMode(SENSOR_POWER_PIN, OUTPUT);
 //  digitalWrite(SENSOR_POWER_PIN, HIGH);
-  attachInterrupt(SENSOR_PIN, notifyMovement, RISING);
+  attachInterrupt(SENSOR_PIN, notifyMovement, FALLING);
 }
 
 void notifyMovement() {
@@ -94,4 +94,5 @@ void reconnect() {
 
 void loop() {
   delay(10000);
+  reconnect();
 }
