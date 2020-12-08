@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
+import li.kta.espguard.MqttService
 import li.kta.espguard.R
 import li.kta.espguard.SensorAdapter
 import li.kta.espguard.SensorViewModel
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
+    private lateinit var mqttService: MqttService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -36,6 +38,9 @@ class MainActivity : AppCompatActivity() {
         //testDb()
         createAdapter()
 
+        mqttService = MqttService(this, model.sensorArray)
+        mqttService.initialize()
+
         button_add_sensor.setOnClickListener{ openNewSensorView()}
     }
 
@@ -45,7 +50,10 @@ class MainActivity : AppCompatActivity() {
         model.refresh()
         sensorAdapter.data = model.sensorArray
     }
-
+    override fun onDestroy() {
+        mqttService.destroy()
+        super.onDestroy()
+    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
