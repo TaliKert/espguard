@@ -46,6 +46,7 @@ class MqttService (
    */
   public fun initialize() {
     mqttClient = MqttAndroidClient(context, SERVER_URI, UUID.randomUUID().toString())
+    mqttClient.setCallback(this)
     mqttClient.connect(MqttConnectOptions().apply { isAutomaticReconnect = true })
   }
 
