@@ -38,7 +38,7 @@ class SensorAdapter(private var listener: SensorAdapterListener) : RecyclerView.
       tv_sensor_name.text = sensor.name.toString()
       tv_sensor_id.text = sensor.deviceId.toString()
 
-      button_configure.setOnClickListener{ listener.onButtonClick(sensor) }
+      button_details.setOnClickListener{ listener.onButtonClick(sensor) }
     }
 
   }

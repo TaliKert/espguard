@@ -14,4 +14,10 @@ interface SensorDao {
   @Insert(onConflict = OnConflictStrategy.ABORT)
   fun insertSensors(vararg sensorEntity: SensorEntity)
 
+
+    /*@Query("SELECT * FROM event WHERE sensorId==:sensorId")
+    fun loadEvents(sensorId: Int): Array<EventEntity>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertEvents(vararg eventEntity: EventEntity)*/
 }

@@ -18,12 +18,14 @@ import li.kta.espguard.room.SensorEntity
 
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        val TAG: String = MainActivity::class.java.name
+    }
 
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         setTheme(this)
 
         super.onCreate(savedInstanceState)
@@ -45,7 +47,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
         return true
@@ -64,18 +65,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openSensorConfiguration(sensor: SensorEntity) {
+        Log.i(TAG, "Opening configurations view for sensor $sensor")
         val intent = Intent(this, ConfigureSensorActivity::class.java)
         intent.putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id)
         startActivity(intent)
     }
 
+    private fun openSensorDetailsView(sensor: SensorEntity) {
+        Log.i(TAG, "Opening details view for sensor $sensor")
+        startActivity(
+                Intent(this, SensorDetailsActivity::class.java)
+                        .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
+    }
+
     private fun createAdapter() {
         sensorAdapter = SensorAdapter(
-            object : SensorAdapter.SensorAdapterListener {
-                override fun onButtonClick(sensor: SensorEntity) {
-                    openSensorConfiguration(sensor)
+                object : SensorAdapter.SensorAdapterListener {
+                    override fun onButtonClick(sensor: SensorEntity) {
+                        openSensorDetailsView(sensor)
+                    }
                 }
-            }
         )
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
@@ -95,7 +104,9 @@ class MainActivity : AppCompatActivity() {
             Log.i("RoomTest", "Sensor ${it.deviceId}")
         }
     }
-    
 
-
+    fun testDbEvents() {
+        val dao = LocalSensorDb.getInstance(this).getSensorDao()
+        /*dao.loadSensors().forEach { dao.insertEvents(EventEntity(sensorId = it.id, time = "TIME")) }*/
+    }
 }
