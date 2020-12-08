@@ -37,6 +37,13 @@ class MainActivity : AppCompatActivity() {
         button_add_sensor.setOnClickListener{ openNewSensorView()}
     }
 
+    override fun onResume(){
+        super.onResume()
+
+        model.refresh()
+        sensorAdapter.data = model.sensorArray
+    }
+
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -81,11 +88,11 @@ class MainActivity : AppCompatActivity() {
         val db = LocalSensorDb.getInstance(this)
 
         // insert 1 sensor
-        val sensor = SensorEntity(0, true)
+        val sensor = SensorEntity(0, "test sensor", "test name" ,false)
 
         db.getSensorDao().insertSensors(sensor)
-        db.getSensorDao().loadSensorIds().forEach {
-            Log.i("RoomTest", "Sensor ${it}")
+        db.getSensorDao().loadSensors().forEach {
+            Log.i("RoomTest", "Sensor ${it.deviceId}")
         }
     }
     
