@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ArduinoHttpClient.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include "time.h"
 #include "secrets.h"
 
@@ -19,11 +20,13 @@ PubSubClient mqttClient(wifiClient);
 #define SENSOR_PIN 23
 #define LED_PIN 2
 
-String projectName = "espguard";
+String projectName = "espguard-mciot";
 
 
 time_t lastNotificationTimestamp = 0;
 int notificationTimeoutPeriod = 900; // TODO: configurable over MQTT
+
+bool active = false;
 
 
 void setup() {
@@ -46,15 +49,24 @@ void setup() {
 
   // Connect to MQTT server
   mqttClient.setServer(mqttServer, 1883);
+  mqttClient.setCallback(callback);
 
-  pinMode(SENSOR_PIN, INPUT_PULLUP);
   pinMode(LED_PIN, OUTPUT);
+  
+//// Not implemented power saving switch
 //  pinMode(SENSOR_POWER_PIN, OUTPUT);
 //  digitalWrite(SENSOR_POWER_PIN, HIGH);
-  attachInterrupt(SENSOR_PIN, notifyMovement, FALLING);
+
+// Use the following pinmode when running RCWL-0516 sensor
+  pinMode(SENSOR_PIN, INPUT);
+//// Use the following if using a button to mock a sensor
+//  pinMode(SENSOR_PIN, INPUT_PULLUP);
+  
+  attachInterrupt(SENSOR_PIN, notifyMovement, RISING);
 }
 
 void notifyMovement() {
+  if (!active) return;
   Serial.println("Movement detected");
 
   // Acquire current time
@@ -71,7 +83,38 @@ void notifyMovement() {
   lastNotificationTimestamp = now;
 
   // Send a notification to firebase cloud messaging
-  fcmClient.post("https://fcm.googleapis.com/v1/projects/" + projectName + "/messages:send");
+  //fcmClient.post("https://fcm.googleapis.com/v1/projects/" + projectName + "/messages:send");
+}
+
+void sendStatus() {
+  mqttClient.publish(("espguard/status/" + deviceId).c_str(), "I am alive!");
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [" + String(topic) + "] ");
+  
+  if (!memcmp(&topic[9], (char*)"health", 6)) {
+    Serial.println("health query");
+    sendStatus(); 
+  }
+  
+  if (!memcmp(&topic[9], (char*)"config", 6)) {
+    Serial.println("config command");
+    
+    StaticJsonDocument<200> jsonPayload;
+    DeserializationError error = deserializeJson(jsonPayload, payload);
+    if (error) {
+      Serial.print(F("JSON deserialization failed: "));
+      Serial.println(error.f_str());
+      return;
+    }
+
+    if (jsonPayload.containsKey("active")) {
+      active = jsonPayload["active"];
+      Serial.print("Set param `active` to ");
+      Serial.println(active);
+    }
+  }
 }
 
 void reconnect() {
@@ -81,7 +124,10 @@ void reconnect() {
     if (mqttClient.connect(deviceId.c_str())) {
       Serial.println("MQTT Connected");
       mqttClient.subscribe(
-        ("ESPGUARD/configure/" + deviceId).c_str(), 1
+        ("espguard/config/" + deviceId).c_str(), 1
+      );
+      mqttClient.subscribe(
+        ("espguard/health/" + deviceId).c_str(), 1
       );
     } else {
       Serial.print("failed, rc=");
@@ -93,6 +139,6 @@ void reconnect() {
 }
 
 void loop() {
-  delay(10000);
   reconnect();
+  mqttClient.loop();
 }
