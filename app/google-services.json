@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "995534027458",
+    "project_id": "espguard-mciot",
+    "storage_bucket": "espguard-mciot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995534027458:android:32120421299e522864995b",
+        "android_client_info": {
+          "package_name": "li.kta.espguard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "995534027458-c7ddn0bf55aj9ouuchvl9qe6haslmel4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-5fUdr70SFVW7m7W1dPpv0Xylt6qfvn8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "995534027458-c7ddn0bf55aj9ouuchvl9qe6haslmel4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
