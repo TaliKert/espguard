@@ -23,11 +23,15 @@ class ConfigureSensorActivity : AppCompatActivity() {
     setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
     val id = intent.getIntExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, -1)
-
+    val sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorById(id)
 
     button_health_check.setOnClickListener {
-      var sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorById(id)
       MqttService.getInstance()?.healthCheck(sensor)
+    }
+
+    button_on_off.setOnClickListener {
+      sensor.turnedOn = !sensor.turnedOn
+      MqttService.getInstance()?.turnOnOff(sensor)
     }
   }
 

@@ -11,7 +11,7 @@
         layout="@layout/toolbar" />
 
     <Button
-        android:id="@+id/button_sleep"
+        android:id="@+id/button_on_off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ON/OFF SENSOR"
@@ -26,5 +26,5 @@
         android:text="HEALTH CHECK"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_sleep" />
+        app:layout_constraintTop_toBottomOf="@id/button_on_off" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -78,14 +78,21 @@ class MqttService (
   /**
    * Call this method if you bind a new sensor to your app
    */
-  public fun subscribe(sensor: SensorEntity) {
+  fun subscribe(sensor: SensorEntity) {
 //    sensors.add(sensor) // Make sensors an arraylist
     mqttClient.subscribe(SENSOR_STATUS_TOPIC_PREFIX + sensor.deviceId, 1)
   }
 
-  public fun healthCheck(sensor: SensorEntity) {
+  fun healthCheck(sensor: SensorEntity) {
     mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, MqttMessage())
     Log.i(TAG, "Sent health check msg to ${sensor.name}")
+  }
+
+  fun turnOnOff(sensor: SensorEntity) {
+    val activityStatus = if (sensor.turnedOn) 1 else 0
+    val msg = MqttMessage("{active: $activityStatus}".toByteArray())
+    mqttClient.publish(SENSOR_CONFIG_TOPIC_PREFIX + sensor.deviceId, msg)
+    Log.i(TAG, "Turned on/off sensor ${sensor.name}")
   }
 
   /**
