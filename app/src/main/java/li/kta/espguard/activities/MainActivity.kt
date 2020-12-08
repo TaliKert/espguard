@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         setupMqttService()
 
-        button_configure_device.setOnClickListener { openNewSensorView() }
+        button_add_device.setOnClickListener { openNewSensorView() }
     }
 
     override fun onResume() {
@@ -112,9 +112,6 @@ class MainActivity : AppCompatActivity() {
         mqttService.initialize()
     }
 
-    fun testDb() {
-        // instance of db
-        val db = LocalSensorDb.getInstance(this)
 
     fun testDbEvents() {
         val dao = LocalSensorDb.getInstance(this).getSensorDao()
