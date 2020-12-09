@@ -9,7 +9,7 @@ const char* mqttServer = "kta.li";
 const char* ntpServer = "pool.ntp.org";
 const char* fcmServer = "fcm.googleapis.com";
 
-const String deviceId = "PLACEHOLDER";
+const String deviceId = "allahuakbar";
 
 WiFiClient wifiClient;
 HttpClient fcmClient = HttpClient(wifiClient, fcmServer, 80);
@@ -86,8 +86,15 @@ void notifyMovement() {
   //fcmClient.post("https://fcm.googleapis.com/v1/projects/" + projectName + "/messages:send");
 }
 
+// Send back a status payload, describing all current params as json
 void sendStatus() {
-  mqttClient.publish(("espguard/status/" + deviceId).c_str(), "I am alive!");
+  StaticJsonDocument<200> jsonPayload;
+  jsonPayload["active"] = active;
+  jsonPayload["timeout"] = notificationTimeoutPeriod;
+  
+  String output = "";
+  serializeJson(jsonPayload, output);
+  mqttClient.publish(("espguard/status/" + deviceId).c_str(), output.c_str());
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -113,6 +120,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
       active = jsonPayload["active"];
       Serial.print("Set param `active` to ");
       Serial.println(active);
+    }
+    if (jsonPayload.containsKey("timeout")) {
+      notificationTimeoutPeriod = jsonPayload["timeout"];
+      Serial.print("Set param `timeout` to ");
+      Serial.println(notificationTimeoutPeriod);
     }
   }
 }
