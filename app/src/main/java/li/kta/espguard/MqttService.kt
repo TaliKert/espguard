@@ -124,6 +124,7 @@ class MqttService(
         for (sensor in sensors) {
             subscribe(sensor)
         }
+        healthCheckAllSensors()
     }
 
     override fun messageArrived(topic: String?, message: MqttMessage?) {
