@@ -66,8 +66,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupHealthCheckReceiver() {
         healthCheckReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                model.refresh()
-                sensorAdapter.notifyDataSetChanged()
+                refreshData()
             }
         }
         registerReceiver(healthCheckReceiver, IntentFilter(STATUS_RESPONSE_ACTION))
@@ -77,9 +76,14 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        refreshData()
+    }
+
+    fun refreshData() {
         model.refresh()
         sensorAdapter.data = model.sensorArray
     }
+
 
     override fun onDestroy() {
         MqttService.destroyMqttService()
@@ -130,5 +134,5 @@ class MainActivity : AppCompatActivity() {
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
         sensorAdapter.data = model.sensorArray
     }
-    
+
 }
