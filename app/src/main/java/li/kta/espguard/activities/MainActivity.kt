@@ -1,6 +1,9 @@
 package li.kta.espguard.activities
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -12,10 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.android.synthetic.main.activity_main.*
-import li.kta.espguard.MqttService
-import li.kta.espguard.R
-import li.kta.espguard.SensorAdapter
-import li.kta.espguard.SensorViewModel
+import li.kta.espguard.*
+import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
@@ -49,8 +50,19 @@ class MainActivity : AppCompatActivity() {
         createAdapter()
 
         MqttService.initializeMqttService(this, model.sensorArray)
+        createDeviceStatusReceiver()
 
         button_add_device.setOnClickListener { openNewSensorView() }
+    }
+
+    private fun createDeviceStatusReceiver() {
+        val broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                model.refresh()
+                sensorAdapter.notifyDataSetChanged()
+            }
+        }
+        registerReceiver(broadcastReceiver, IntentFilter(STATUS_RESPONSE_ACTION))
     }
 
 
