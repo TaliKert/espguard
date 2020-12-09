@@ -1,33 +1,31 @@
 #include <WiFi.h>
-#include <ArduinoHttpClient.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <FirebaseESP32.h>
 #include "time.h"
 #include "secrets.h"
-
-const char* mqttServer = "kta.li";
-const char* ntpServer = "pool.ntp.org";
-const char* fcmServer = "fcm.googleapis.com";
-
-const String deviceId = "allahuakbar";
+#include "params.h"
 
 WiFiClient wifiClient;
-HttpClient fcmClient = HttpClient(wifiClient, fcmServer, 80);
 PubSubClient mqttClient(wifiClient);
+
+FirebaseData firebaseData;
+const int TOKEN_LIMIT = 10;
+const int TOKEN_LENGTH = 163+1;
+char registeredTokens[TOKEN_LIMIT][TOKEN_LENGTH];
+int registeredTokenCount = 0;
 
 //// Power pin is LOW -> power to the sensor is interrupted
 //#define SENSOR_POWER_PIN 22
 #define SENSOR_PIN 23
-#define LED_PIN 2
-
-String projectName = "espguard-mciot";
-
 
 time_t lastNotificationTimestamp = 0;
-int notificationTimeoutPeriod = 900; // TODO: configurable over MQTT
 
-bool active = false;
+int notificationTimeoutPeriod = TIMEOUT;
+bool active = ACTIVE;
 
+// This is needed to avoid executing heavy API calls in the interrupt function
+bool movementDetected = false;
 
 void setup() {
   Serial.begin(115200);
@@ -45,29 +43,43 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // Sync device time with NTP server
-  configTime(0, 0, ntpServer);
+  configTime(0, 0, "pool.ntp.org");
 
   // Connect to MQTT server
-  mqttClient.setServer(mqttServer, 1883);
+  mqttClient.setServer(MQTT_BROKER, 1883);
   mqttClient.setCallback(callback);
 
-  pinMode(LED_PIN, OUTPUT);
+  // Setup cloud messaging API
+  Firebase.begin(FCM_PROJECTNAME, "");
+  Firebase.reconnectWiFi(true);
+  firebaseData.fcm.begin(FCM_APIKEY);
   
 //// Not implemented power saving switch
 //  pinMode(SENSOR_POWER_PIN, OUTPUT);
 //  digitalWrite(SENSOR_POWER_PIN, HIGH);
 
-// Use the following pinmode when running RCWL-0516 sensor
+#if MOCK_SENSOR
+  pinMode(SENSOR_PIN, INPUT_PULLUP);
+#else
   pinMode(SENSOR_PIN, INPUT);
-//// Use the following if using a button to mock a sensor
-//  pinMode(SENSOR_PIN, INPUT_PULLUP);
+#endif
   
-  attachInterrupt(SENSOR_PIN, notifyMovement, RISING);
+  attachInterrupt(SENSOR_PIN, detectMovement, RISING);
+}
+
+void detectMovement() {
+  if (active) movementDetected = true;
+}
+
+void loop() {
+  reconnect();
+  mqttClient.loop();
+  if (movementDetected) notifyMovement();
 }
 
 void notifyMovement() {
-  if (!active) return;
   Serial.println("Movement detected");
+  movementDetected = false;
 
   // Acquire current time
   struct tm timeinfo;
@@ -83,7 +95,24 @@ void notifyMovement() {
   lastNotificationTimestamp = now;
 
   // Send a notification to firebase cloud messaging
-  //fcmClient.post("https://fcm.googleapis.com/v1/projects/" + projectName + "/messages:send");
+  StaticJsonDocument<200> jsonPayload;
+  jsonPayload["deviceId"] = DEVICE_ID;
+  jsonPayload["timestamp"] = now;
+  String output = "";
+  serializeJson(jsonPayload, output);
+  Serial.println(output);
+  firebaseData.fcm.setDataMessage(output);
+  if (Firebase.broadcastMessage(firebaseData)) {
+      Serial.println("PASSED");
+      Serial.println(firebaseData.fcm.getSendResult());
+      Serial.println("------------------------------------");
+      Serial.println();
+  } else {
+      Serial.println("FAILED");
+      Serial.println("REASON: " + firebaseData.errorReason());
+      Serial.println("------------------------------------");
+      Serial.println();
+  }
 }
 
 // Send back a status payload, describing all current params as json
@@ -94,7 +123,7 @@ void sendStatus() {
   
   String output = "";
   serializeJson(jsonPayload, output);
-  mqttClient.publish(("espguard/status/" + deviceId).c_str(), output.c_str());
+  mqttClient.publish(("espguard/status/" + String(DEVICE_ID)).c_str(), output.c_str());
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -102,8 +131,36 @@ void callback(char* topic, byte* payload, unsigned int length) {
   
   if (!memcmp(&topic[9], (char*)"health", 6)) {
     Serial.println("health query");
+
+    StaticJsonDocument<200> jsonPayload;
+    DeserializationError error = deserializeJson(jsonPayload, payload);
+    if (error) {
+      Serial.print(F("JSON deserialization failed: "));
+      Serial.println(error.f_str());
+      return;
+    }
+    
+//    // attempt to register device token as notification receiver by token
+    if (jsonPayload.containsKey("token")) {
+      for (int i = 0; i < registeredTokenCount; i++) {
+        Serial.print("Comparing: ");
+        Serial.println(registeredTokens[i]);
+        Serial.print("To       : ");
+        Serial.println(jsonPayload["token"].as<String>());
+        if (!strncmp(registeredTokens[i], jsonPayload["token"], TOKEN_LENGTH)) {
+          Serial.println("Valid token found");
+          break;
+        } else if (i + 1 == registeredTokenCount && i + 1 < TOKEN_LIMIT) {
+          strncpy(registeredTokens[i+1], jsonPayload["token"].as<char*>(), TOKEN_LENGTH);
+          firebaseData.fcm.addDeviceToken(jsonPayload["token"]);
+          registeredTokenCount++;
+          break;
+        }
+      }
+    }
     sendStatus(); 
   }
+  
   
   if (!memcmp(&topic[9], (char*)"config", 6)) {
     Serial.println("config command");
@@ -133,13 +190,13 @@ void reconnect() {
   while (!mqttClient.connected()) {
     Serial.print("Attempting MQTT connection...");
     
-    if (mqttClient.connect(deviceId.c_str())) {
+    if (mqttClient.connect(DEVICE_ID)) {
       Serial.println("MQTT Connected");
       mqttClient.subscribe(
-        ("espguard/config/" + deviceId).c_str(), 1
+        ("espguard/config/" + String(DEVICE_ID)).c_str(), 1
       );
       mqttClient.subscribe(
-        ("espguard/health/" + deviceId).c_str(), 1
+        ("espguard/health/" + String(DEVICE_ID)).c_str(), 1
       );
     } else {
       Serial.print("failed, rc=");
@@ -148,9 +205,4 @@ void reconnect() {
       delay(5000);
     }
   }
-}
-
-void loop() {
-  reconnect();
-  mqttClient.loop();
 }
