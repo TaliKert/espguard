@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import li.kta.espguard.activities.SensorDetailsActivity
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.room.EventEntity
 import li.kta.espguard.room.LocalSensorDb
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.util.*
 
 class FirebaseService : FirebaseMessagingService() {
 
@@ -39,7 +41,10 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
 
         val data = message.data
-        val event = EventEntity(0, data["deviceId"], data["timestamp"]?.toLong())
+        val event = EventEntity(0,
+            data["deviceId"],
+            ZonedDateTime.ofInstant(Instant.parse(data["timestamp"]), TimeZone.getDefault().toZoneId())
+        )
 
         LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
 

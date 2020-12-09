@@ -99,7 +99,7 @@ class SensorDetailsActivity : AppCompatActivity() {
         eventAdapter.data = model.eventsArray
         Log.i(TAG, "Refreshing data. Freshest data: ${model.eventsArray}")
         LocalSensorDb.getInstance(this).getEventDao().loadEvents().forEach {
-            Log.i(TAG, "Loaded event: ${it.deviceId} : ${it.id} : ${it.event_time}")
+            Log.i(TAG, "Loaded event: ${it.deviceId} : ${it.id} : ${it.eventTime}")
         }
     }
 

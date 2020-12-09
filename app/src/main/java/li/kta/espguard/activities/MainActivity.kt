@@ -22,10 +22,7 @@ import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
 /** TODO
- *    - Create status message broadcast and receiver to handle
- *      health check responses.
  *    - Node configuration communication
- *      * Turn off/on
  *      * Time of day
  *      * cooldown period (how long to wait until next alert)
  *    - Firebase cloud messaging!

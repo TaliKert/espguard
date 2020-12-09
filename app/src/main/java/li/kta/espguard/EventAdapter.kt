@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.event_list_item.view.*
 import li.kta.espguard.room.EventEntity
+import java.time.format.DateTimeFormatter
 
 class EventAdapter() :
     RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
@@ -40,7 +41,7 @@ class EventAdapter() :
 
         holder.itemView.apply {
             event_id.text = event.id.toString()
-            event_time.text = event.event_time.toString()
+            event_time.text = event.eventTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         }
     }
 

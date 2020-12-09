@@ -1,11 +1,12 @@
 package li.kta.espguard.room
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.*
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
-@Database(entities = [SensorEntity::class, EventEntity::class], version = 4)
+@Database(entities = [SensorEntity::class, EventEntity::class], version = 5, exportSchema = false)
+@TypeConverters(ZDTConverter::class)
 abstract class LocalSensorDb: RoomDatabase() {
 
   companion object {
@@ -28,4 +29,22 @@ abstract class LocalSensorDb: RoomDatabase() {
 
   abstract fun getEventDao(): EventDao
 
+}
+
+object ZDTConverter {
+  private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+
+  @TypeConverter
+  @JvmStatic
+  fun toOffsetDateTime(value: String?): ZonedDateTime? {
+    return value?.let {
+      return formatter.parse(value, ZonedDateTime::from)
+    }
+  }
+
+  @TypeConverter
+  @JvmStatic
+  fun fromOffsetDateTime(date: ZonedDateTime?): String? {
+    return date?.format(formatter)
+  }
 }
