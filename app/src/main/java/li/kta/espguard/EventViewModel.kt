@@ -6,11 +6,16 @@ import li.kta.espguard.room.EventEntity
 import li.kta.espguard.room.LocalSensorDb
 
 class EventViewModel(application: Application) : AndroidViewModel(application) {
-    private var sensorDb: LocalSensorDb = LocalSensorDb.getInstance(application)
 
-    val events: ArrayList<EventEntity> = arrayListOf()
+    private var localDb: LocalSensorDb = LocalSensorDb.getInstance(application)
+    var eventsArray: Array<EventEntity> = arrayOf()
+    var id: Int = -1
+
+    init {
+        refresh()
+    }
 
     fun refresh() {
-        /*events = sensorDb.getSensorDao().loadSensors()*/
+        eventsArray = localDb.getEventDao().findEventsByDeviceId(id)
     }
 }

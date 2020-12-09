@@ -1,6 +1,5 @@
 package li.kta.espguard
 
-import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -8,32 +7,34 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.event_list_item.view.*
 import li.kta.espguard.room.EventEntity
-import java.util.*
 
-
-class EventAdapter(private val sensorId: Int, private val applicationContext: Context)
-    : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
+class EventAdapter() :
+    RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     companion object {
         val TAG: String = EventAdapter::class.java.name
-
-        val mockEvents: ArrayList<EventEntity> = listOf("ID", "ID", "ID")
-                .mapTo(arrayListOf()) { EventEntity(0, deviceId = it, event_time = System.currentTimeMillis()) }
     }
 
-    /*private var events: ArrayList<EventEntity> = arrayListOf()*/
-    private var events: ArrayList<EventEntity> = mockEvents  // TODO: REPLACE
+    var data = arrayOf<EventEntity>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     inner class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder =
-            EventViewHolder(LayoutInflater.from(parent.context)
-                                    .inflate(R.layout.event_list_item, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.event_list_item, parent, false)
+        return EventViewHolder(view)
+    }
 
-    override fun getItemCount(): Int = events.size
+    override fun getItemCount(): Int {
+        return data.size
+    }
 
     override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
-        val event = events[position]
+        val event = data[position]
 
         Log.i(TAG, "Binding event $position : $event")
 
@@ -43,17 +44,5 @@ class EventAdapter(private val sensorId: Int, private val applicationContext: Co
         }
     }
 
-    // TODO: maybe find where we need to do more event updates?
-    fun updateEvents() = updateEvents(getSensorEvents(sensorId))
-
-    private fun getSensorEvents(sensorId: Int): Array<EventEntity> =
-            /*LocalSensorDb.getInstance(applicationContext).getSensorDao().loadEvents(sensorId)*/
-            mockEvents.toTypedArray()
-
-    fun updateEvents(events: Array<EventEntity>) {
-        this.events.clear()
-        this.events.addAll(events)
-        notifyDataSetChanged()
-    }
 }
 

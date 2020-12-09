@@ -22,23 +22,23 @@ class SensorDetailsActivity : AppCompatActivity() {
         const val EXTRA_SENSOR_ID = "sensorId"
     }
 
-    private var model: EventViewModel? = null
-    private var eventAdapter: EventAdapter? = null
+    private lateinit var model: EventViewModel
+    private lateinit var eventAdapter: EventAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sensor_details)
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
-        model = ViewModelProvider(this).get(EventViewModel::class.java)
-
         val id = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
 
-        createAdapter(id)
+        model = ViewModelProvider(this).get(EventViewModel::class.java)
+        model.id = id
+
+        createAdapter()
 
         button_configure_device.setOnClickListener { openSensorConfiguration(id) }
         button_delete_device.setOnClickListener { deleteSensor(id) }
-
     }
 
     private fun deleteSensor(id: Int) {
@@ -53,11 +53,9 @@ class SensorDetailsActivity : AppCompatActivity() {
     }
 
     private fun removeEventsFromDatabase(sensor: SensorEntity) {
-        sensor.deviceId?.let {
-            val events =
-                LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(it)
-            LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
-        }
+        val events =
+            LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(sensor.id)
+        LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
     }
 
     private fun removeSensorFromDatabase(sensor: SensorEntity) {
@@ -67,19 +65,15 @@ class SensorDetailsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        model?.refresh()
-        eventAdapter?.updateEvents()
+        model.refresh()
+        eventAdapter.data = model.eventsArray
     }
 
-    private fun createAdapter(sensorId: Int) {
-        eventAdapter = EventAdapter(sensorId, applicationContext)
-
-        eventAdapter?.let {
-            events_recyclerview.adapter = it
-            events_recyclerview.layoutManager = LinearLayoutManager(this)
-            it.updateEvents()
-            it.notifyDataSetChanged()
-        }
+    private fun createAdapter() {
+        eventAdapter = EventAdapter()
+        events_recyclerview.adapter = eventAdapter
+        events_recyclerview.layoutManager = LinearLayoutManager(this)
+        eventAdapter.data = model.eventsArray
     }
 
     private fun openSensorConfiguration(sensorId: Int) {

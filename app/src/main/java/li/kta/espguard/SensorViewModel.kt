@@ -7,15 +7,15 @@ import li.kta.espguard.room.SensorEntity
 
 class SensorViewModel(application: Application) : AndroidViewModel(application) {
 
-  var localDb: LocalSensorDb = LocalSensorDb.getInstance(application)
-  var sensorArray: Array<SensorEntity> = arrayOf()
+    var localDb: LocalSensorDb = LocalSensorDb.getInstance(application)
+    var sensorArray: Array<SensorEntity> = arrayOf()
 
-  init {
-    refresh()
-  }
+    init {
+        refresh()
+    }
 
-  fun refresh(){
-    sensorArray = localDb.getSensorDao().loadAllSensors()
-  }
+    fun refresh() {
+        sensorArray = localDb.getSensorDao().loadAllSensors()
+    }
 
 }
