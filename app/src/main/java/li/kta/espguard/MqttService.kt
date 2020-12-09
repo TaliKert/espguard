@@ -14,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import java.time.ZonedDateTime
 import java.util.*
 
 class MqttService(
@@ -41,6 +42,7 @@ class MqttService(
         private const val SENSOR_CONFIG_TOPIC_PREFIX = "espguard/config/"
 
         const val STATUS_RESPONSE_ACTION = "li.kta.status.response"
+        const val HEALTH_CHECK_COMPLETE = "health check complete"
 
         private lateinit var mqttService: MqttService
 
@@ -93,12 +95,17 @@ class MqttService(
 
         mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, msg)
         Log.i(TAG, "Sent health check msg to ${sensor.name} with token $token")
+
+        sensor.lastHealthCheck = ZonedDateTime.now()
+        LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
     }
 
     fun healthCheckAllSensors() {
         sensors.forEach {
             healthCheck(it)
         }
+        context.sendBroadcast(
+            Intent(HEALTH_CHECK_COMPLETE))
     }
 
     fun turnOnOff(sensor: SensorEntity) {
@@ -127,6 +134,7 @@ class MqttService(
             val sensor: SensorEntity = LocalSensorDb.getInstance(context).getSensorDao().findSensorByDeviceId(deviceId)
             val json = Gson().fromJson(message.toString(), JsonObject::class.java)
             sensor.turnedOn = json.get("active").asBoolean
+            sensor.successfulHealthCheck = ZonedDateTime.now()
             LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
 
             context.sendBroadcast(
