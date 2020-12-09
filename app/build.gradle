@@ -52,6 +52,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt 'androidx.room:room-compiler:2.2.5'
 
+    // Firebase
+    implementation 'com.google.firebase:firebase-messaging:21.0.0'
 
     // MQTT client
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.1'

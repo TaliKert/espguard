@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.MqttService
 import li.kta.espguard.R
@@ -47,7 +50,25 @@ class MainActivity : AppCompatActivity() {
 
         MqttService.initializeMqttService(this, model.sensorArray)
 
+        getToken()
+
         button_add_device.setOnClickListener { openNewSensorView() }
+    }
+
+    fun getToken(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("MainActivity", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Log and toast
+            Log.d("TOKEN", token.toString())
+            Toast.makeText(baseContext, "Got token", Toast.LENGTH_SHORT).show()
+        })
     }
 
     override fun onResume() {
