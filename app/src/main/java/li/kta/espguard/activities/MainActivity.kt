@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.MqttService
 import li.kta.espguard.R
@@ -49,6 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         button_add_device.setOnClickListener { openNewSensorView() }
     }
+
 
     override fun onResume() {
         super.onResume()
