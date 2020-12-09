@@ -9,13 +9,13 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
 
     private var localDb: LocalSensorDb = LocalSensorDb.getInstance(application)
     var eventsArray: Array<EventEntity> = arrayOf()
-    var id: Int = -1
+    var deviceId: String = ""
 
     init {
         refresh()
     }
 
     fun refresh() {
-        eventsArray = localDb.getEventDao().findEventsByDeviceId(id)
+        eventsArray = localDb.getEventDao().findEventsByDeviceId(deviceId)
     }
 }

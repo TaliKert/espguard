@@ -1,6 +1,9 @@
 package li.kta.espguard.activities
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +16,7 @@ import kotlinx.android.synthetic.main.activity_sensor_details.*
 import li.kta.espguard.R
 import li.kta.espguard.EventAdapter
 import li.kta.espguard.EventViewModel
+import li.kta.espguard.FirebaseService
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
@@ -24,6 +28,7 @@ class SensorDetailsActivity : AppCompatActivity() {
 
     private lateinit var model: EventViewModel
     private lateinit var eventAdapter: EventAdapter
+    lateinit var firebaseEventReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +36,12 @@ class SensorDetailsActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
         val id = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
-
+        val sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorById(id)
         model = ViewModelProvider(this).get(EventViewModel::class.java)
-        model.id = id
+        model.deviceId = sensor.deviceId.toString()
 
         createAdapter()
+        setupFirebaseEventReceiver()
 
         button_configure_device.setOnClickListener { openSensorConfiguration(id) }
         button_delete_device.setOnClickListener { deleteSensor(id) }
@@ -53,9 +59,11 @@ class SensorDetailsActivity : AppCompatActivity() {
     }
 
     private fun removeEventsFromDatabase(sensor: SensorEntity) {
-        val events =
-            LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(sensor.id)
-        LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
+        sensor.deviceId?.let {
+            val events =
+                LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(it)
+            LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
+        }
     }
 
     private fun removeSensorFromDatabase(sensor: SensorEntity) {
@@ -65,8 +73,34 @@ class SensorDetailsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        refreshData()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(firebaseEventReceiver)
+    }
+
+    private fun setupFirebaseEventReceiver() {
+        firebaseEventReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                Log.i(TAG, "Received broadcast. Refreshing events list...")
+                refreshData()
+            }
+        }
+        registerReceiver(
+            firebaseEventReceiver,
+            IntentFilter(FirebaseService.STATUS_RESPONSE_ACTION)
+        )
+    }
+
+    fun refreshData() {
         model.refresh()
         eventAdapter.data = model.eventsArray
+        Log.i(TAG, "Refreshing data. Freshest data: ${model.eventsArray}")
+        LocalSensorDb.getInstance(this).getEventDao().loadEvents().forEach {
+            Log.i(TAG, "Loaded event: ${it.deviceId} : ${it.id} : ${it.event_time}")
+        }
     }
 
     private fun createAdapter() {
