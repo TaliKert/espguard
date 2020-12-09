@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
+    lateinit var healthCheckReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -50,19 +51,20 @@ class MainActivity : AppCompatActivity() {
         createAdapter()
 
         MqttService.initializeMqttService(this, model.sensorArray)
-        createDeviceStatusReceiver()
+
+        setupHealthCheckReceiver()
 
         button_add_device.setOnClickListener { openNewSensorView() }
     }
 
-    private fun createDeviceStatusReceiver() {
-        val broadcastReceiver = object : BroadcastReceiver() {
+    private fun setupHealthCheckReceiver() {
+        healthCheckReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 model.refresh()
                 sensorAdapter.notifyDataSetChanged()
             }
         }
-        registerReceiver(broadcastReceiver, IntentFilter(STATUS_RESPONSE_ACTION))
+        registerReceiver(healthCheckReceiver, IntentFilter(STATUS_RESPONSE_ACTION))
     }
 
 
@@ -75,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         MqttService.destroyMqttService()
+        unregisterReceiver(healthCheckReceiver)
         super.onDestroy()
     }
 

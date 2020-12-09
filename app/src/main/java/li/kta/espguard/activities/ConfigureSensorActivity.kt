@@ -34,6 +34,7 @@ class ConfigureSensorActivity : AppCompatActivity() {
 
     switch_sensor_on.setOnCheckedChangeListener { _, isSwitchedOn ->
       sensor.turnedOn = isSwitchedOn
+      LocalSensorDb.getInstance(this).getSensorDao().updateSensor(sensor)
       MqttService.getInstance()?.turnOnOff(sensor)
     }
   }

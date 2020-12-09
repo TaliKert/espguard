@@ -37,17 +37,15 @@ class FirebaseService : FirebaseMessagingService() {
 
 
     override fun onMessageReceived(message: RemoteMessage) {
-        //TODO
-        val notification = message.notification
-        val data = message.data
 
+        val data = message.data
         val event = EventEntity(0, data["deviceId"], data["timestamp"]?.toLong())
-        Log.i(TAG, event.toString())
+
         LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
 
         this.sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
 
+        Log.i(TAG, event.toString())
         Log.i(TAG, data.toString())
-
     }
 }
