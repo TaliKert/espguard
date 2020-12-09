@@ -4,7 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.room.Room
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
@@ -120,8 +121,14 @@ class MqttService(
 
     override fun messageArrived(topic: String?, message: MqttMessage?) {
         Log.i(TAG, "MQTT Message: `${message.toString()}` (topic=`${topic}`)")
+
         if (topic != null) {
             val deviceId = topic.split("/").last()
+            val sensor: SensorEntity = LocalSensorDb.getInstance(context).getSensorDao().findSensorByDeviceId(deviceId)
+            val json = Gson().fromJson(message.toString(), JsonObject::class.java)
+            sensor.turnedOn = json.get("active").asBoolean
+            LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
+
             context.sendBroadcast(
                 Intent(STATUS_RESPONSE_ACTION)
                     .putExtra("deviceId", deviceId)
