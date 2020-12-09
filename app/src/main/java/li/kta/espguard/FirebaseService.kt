@@ -43,7 +43,10 @@ class FirebaseService : FirebaseMessagingService() {
         val data = message.data
         val event = EventEntity(0,
             data["deviceId"],
-            ZonedDateTime.ofInstant(Instant.parse(data["timestamp"]), TimeZone.getDefault().toZoneId())
+            ZonedDateTime.ofInstant(
+                data["timestamp"]?.toLong()?.let { Instant.ofEpochSecond(it) },
+                TimeZone.getDefault().toZoneId()
+            )
         )
 
         LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
