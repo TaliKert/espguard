@@ -6,6 +6,10 @@ import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
@@ -104,8 +108,14 @@ class MqttService(
         sensors.forEach {
             healthCheck(it)
         }
-        context.sendBroadcast(
-            Intent(HEALTH_CHECK_COMPLETE))
+
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            delay(300)
+            context.sendBroadcast(
+                Intent(HEALTH_CHECK_COMPLETE))
+        }
+
     }
 
     fun turnOnOff(sensor: SensorEntity) {

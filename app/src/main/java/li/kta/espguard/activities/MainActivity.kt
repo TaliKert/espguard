@@ -130,10 +130,5 @@ class MainActivity : AppCompatActivity() {
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
         sensorAdapter.data = model.sensorArray
     }
-
-
-    fun testDbEvents() {
-        val dao = LocalSensorDb.getInstance(this).getSensorDao()
-        /*dao.loadSensors().forEach { dao.insertEvents(EventEntity(sensorId = it.id, time = "TIME")) }*/
-    }
+    
 }
