@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         setupHealthCheckReceiver()
 
         button_add_device.setOnClickListener { openNewSensorView() }
+
+        MqttService.getInstance()?.healthCheckAllSensors()
     }
 
     private fun setupHealthCheckReceiver() {
