@@ -13,6 +13,7 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         const val PREFERENCES_FILE = "prefs"
         const val PREFERENCES_DARK_THEME = "dark_theme"
+        const val PREFERENCES_FIREBASE_TOKEN = "token"
 
         fun setTheme(context: Context) {
             val preferences =

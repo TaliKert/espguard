@@ -50,26 +50,9 @@ class MainActivity : AppCompatActivity() {
 
         MqttService.initializeMqttService(this, model.sensorArray)
 
-        getToken()
-
         button_add_device.setOnClickListener { openNewSensorView() }
     }
 
-    fun getToken(){
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("MainActivity", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-
-            // Log and toast
-            Log.d("TOKEN", token.toString())
-            Toast.makeText(baseContext, "Got token", Toast.LENGTH_SHORT).show()
-        })
-    }
 
     override fun onResume() {
         super.onResume()
