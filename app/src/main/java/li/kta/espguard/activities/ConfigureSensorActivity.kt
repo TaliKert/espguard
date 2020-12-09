@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_configure_sensor.*
+import kotlinx.android.synthetic.main.activity_settings.*
 import li.kta.espguard.MqttService
 import li.kta.espguard.R
 import li.kta.espguard.room.LocalSensorDb
@@ -29,8 +30,10 @@ class ConfigureSensorActivity : AppCompatActivity() {
       MqttService.getInstance()?.healthCheck(sensor)
     }
 
-    button_on_off.setOnClickListener {
-      sensor.turnedOn = !sensor.turnedOn
+    switch_sensor_on.isChecked = sensor.turnedOn
+
+    switch_sensor_on.setOnCheckedChangeListener { _, isSwitchedOn ->
+      sensor.turnedOn = isSwitchedOn
       MqttService.getInstance()?.turnOnOff(sensor)
     }
   }
