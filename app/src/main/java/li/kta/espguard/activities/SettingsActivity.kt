@@ -4,8 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import kotlinx.android.synthetic.main.activity_sensor_details.*
 import kotlinx.android.synthetic.main.activity_settings.*
 import li.kta.espguard.R
+import li.kta.espguard.room.LocalSensorDb
 
 
 class SettingsActivity : AppCompatActivity() {
@@ -38,6 +40,13 @@ class SettingsActivity : AppCompatActivity() {
         switch_theme.setOnCheckedChangeListener { _, isChecked ->
             toggleThemeSwitch(isChecked)
         }
+
+        button_clear_events.setOnClickListener { clearEvents() }
+
+    }
+
+    private fun clearEvents() {
+        LocalSensorDb.getInstance(this).getEventDao().nukeTable()
     }
 
     private fun loadThemeSwitchValue() {

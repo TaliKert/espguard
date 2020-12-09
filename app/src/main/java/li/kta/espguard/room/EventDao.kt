@@ -8,6 +8,9 @@ interface EventDao {
   @Delete
   fun deleteEvents(vararg events: EventEntity)
 
+  @Query("DELETE FROM event")
+  fun nukeTable()
+
   @Query("SELECT * FROM event WHERE deviceId==:deviceId")
   fun findEventsByDeviceId(deviceId: String): Array<EventEntity>
 
