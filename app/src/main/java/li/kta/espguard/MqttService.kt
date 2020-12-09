@@ -88,7 +88,7 @@ class MqttService(
         val preferences =
             context.getSharedPreferences(SettingsActivity.PREFERENCES_FILE, Context.MODE_PRIVATE)
         val token = preferences.getString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, "")
-        val msg = MqttMessage("{token: $token}".toByteArray())
+        val msg = MqttMessage("{\"token\": \"$token\"}".toByteArray())
 
         mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, msg)
         Log.i(TAG, "Sent health check msg to ${sensor.name} with token $token")

@@ -2,15 +2,16 @@ package li.kta.espguard
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import li.kta.espguard.activities.SettingsActivity
+import li.kta.espguard.room.EventEntity
+import li.kta.espguard.room.LocalSensorDb
 
 class FirebaseService : FirebaseMessagingService() {
 
     companion object {
-        val TAG = "FirebaseService"
+        const val TAG = "FirebaseService"
     }
 
     /**
@@ -37,7 +38,9 @@ class FirebaseService : FirebaseMessagingService() {
         val notification = message.notification
         val data = message.data
 
-        Log.i("FIREBASE MSG", data.toString())
+        val event = EventEntity(0, data["deviceId"], data["timestamp"]?.toLong())
+        LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
+        Log.i(TAG, data.toString())
 
     }
 }
