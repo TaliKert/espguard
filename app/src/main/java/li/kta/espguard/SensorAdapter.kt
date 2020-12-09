@@ -1,5 +1,6 @@
 package li.kta.espguard
 
+import android.graphics.drawable.VectorDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
 
 import li.kta.espguard.room.SensorEntity
+import java.time.ZonedDateTime
 
 class SensorAdapter(private var listener: SensorAdapterListener) :
     RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
@@ -46,7 +48,10 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
         holder.itemView.apply {
             tv_sensor_name.text = sensor.name.toString()
             tv_sensor_id.text = sensor.deviceId.toString()
-
+//            if (sensor.lastHealthCheck?.isAfter()) {
+//
+//            }
+            status_svg.setImageResource(R.drawable.ic_pending_24)
             button_details.setOnClickListener { listener.onButtonClick(sensor) }
         }
 
