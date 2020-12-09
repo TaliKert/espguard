@@ -35,7 +35,7 @@ class AddSensorActivity : AppCompatActivity() {
     val sensorName = et_sensor_name.text.toString()
     val sensorId = et_sensor_id.text.toString()
 
-    return SensorEntity(0, sensorId, sensorName, true)
+    return SensorEntity(0, sensorId, sensorName, true, null, null)
   }
 
   private fun addSensorToDb() {

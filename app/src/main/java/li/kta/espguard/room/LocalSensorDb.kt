@@ -5,7 +5,7 @@ import androidx.room.*
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@Database(entities = [SensorEntity::class, EventEntity::class], version = 5, exportSchema = false)
+@Database(entities = [SensorEntity::class, EventEntity::class], version = 6, exportSchema = false)
 @TypeConverters(ZDTConverter::class)
 abstract class LocalSensorDb: RoomDatabase() {
 
@@ -29,22 +29,4 @@ abstract class LocalSensorDb: RoomDatabase() {
 
   abstract fun getEventDao(): EventDao
 
-}
-
-object ZDTConverter {
-  private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-
-  @TypeConverter
-  @JvmStatic
-  fun toOffsetDateTime(value: String?): ZonedDateTime? {
-    return value?.let {
-      return formatter.parse(value, ZonedDateTime::from)
-    }
-  }
-
-  @TypeConverter
-  @JvmStatic
-  fun fromOffsetDateTime(date: ZonedDateTime?): String? {
-    return date?.format(formatter)
-  }
 }
