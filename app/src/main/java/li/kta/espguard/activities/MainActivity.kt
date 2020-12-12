@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.*
+import li.kta.espguard.MqttService.Companion.STATUS_REQUEST_ACTION
 import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.room.LocalSensorDb
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
     lateinit var healthCheckReceiver: BroadcastReceiver
+    lateinit var healthCheckRequestReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -68,6 +70,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         registerReceiver(healthCheckReceiver, IntentFilter(STATUS_RESPONSE_ACTION))
+
+        healthCheckRequestReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                sensorAdapter.changeSensorStatusesPending()
+            }
+        }
+        registerReceiver(healthCheckRequestReceiver, IntentFilter(STATUS_REQUEST_ACTION))
     }
 
 
@@ -84,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         MqttService.destroyMqttService()
         unregisterReceiver(healthCheckReceiver)
+        unregisterReceiver(healthCheckRequestReceiver)
         super.onDestroy()
     }
 

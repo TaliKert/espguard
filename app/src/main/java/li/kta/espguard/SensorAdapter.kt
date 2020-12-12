@@ -8,6 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
 
 import li.kta.espguard.room.SensorEntity
+import java.time.Instant
+import java.time.Instant.MIN
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class SensorAdapter(private var listener: SensorAdapterListener) :
     RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
@@ -17,18 +21,26 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
 
         fun getStatusDrawableResId(sensor: SensorEntity): Int {
             val last = sensor.lastHealthCheck
-            val prev = sensor.successfulHealthCheck
+            val prevSuccess = sensor.successfulHealthCheck
             if (last != null) {
-                if (prev == null) {
-                    return R.drawable.ic_pending_24
+                if (prevSuccess == null ||
+                    prevSuccess.plusSeconds(14).isBefore(ZonedDateTime.now())) {
+                    return R.drawable.ic_failed_24
                 }
-                if (last.isBefore(prev)) {
-                    return R.drawable.ic_healthy_24
+                if (last.isBefore(prevSuccess)) {
+                    if (sensor.turnedOn)
+                        return R.drawable.ic_healthy_24
+                    else
+                        return R.drawable.ic_switched_off_24
+                } else {
+                    return R.drawable.ic_pending_24
                 }
             }
             return R.drawable.ic_failed_24
         }
     }
+
+
 
     interface SensorAdapterListener {
         fun onButtonClick(sensor: SensorEntity)
@@ -68,5 +80,12 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
 
     }
 
+    fun changeSensorStatusesPending() {
+//        for (sensor in data) {
+//            sensor.successfulHealthCheck = null
+//        }
+//        lastHealthCheckAt = LocalDateTime.now()
+        notifyDataSetChanged()
+    }
 }
 
