@@ -144,18 +144,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
 //    // attempt to register device token as notification receiver by token
     if (jsonPayload.containsKey("token")) {
       Serial.println("The message contained token");
+      bool found = false;
       int i = 0;
-      for (int i = 0; i < registeredTokenCount; i++) {
+      for (; i < registeredTokenCount; i++) {
         Serial.print("Comparing: ");
         Serial.println(registeredTokens[i]);
         Serial.print("To       : ");
         Serial.println(jsonPayload["token"].as<String>());
         if (!strncmp(registeredTokens[i], jsonPayload["token"], TOKEN_LENGTH)) {
           Serial.println("Valid token found");
+          found = true;
           break;
         }
       }
-      if (i == registeredTokenCount && i + 1 < TOKEN_LIMIT) {
+      if ((!found) && (registeredTokenCount < TOKEN_LIMIT)) {
           Serial.println("Token not found, trying to add: " + jsonPayload["token"].as<String>());
           strncpy(registeredTokens[i], jsonPayload["token"].as<char*>(), TOKEN_LENGTH);
           firebaseData.fcm.addDeviceToken(jsonPayload["token"]);
