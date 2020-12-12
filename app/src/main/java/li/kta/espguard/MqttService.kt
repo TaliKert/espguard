@@ -6,10 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
@@ -30,6 +27,8 @@ class MqttService(
         private const val TAG = "MqttService"
         private const val SERVER_URI = "tcp://kta.li:1883"
 
+        private const val HEALTH_HEARTBEAT_INTERVAL = 7000L // ms
+
         /**
          * Status topic: Any published message by the node (incl. health check).
          *               Message is a json object of its current configuration.
@@ -46,13 +45,14 @@ class MqttService(
         private const val SENSOR_CONFIG_TOPIC_PREFIX = "espguard/config/"
 
         const val STATUS_RESPONSE_ACTION = "li.kta.status.response"
-        const val HEALTH_CHECK_COMPLETE = "health check complete"
+        const val STATUS_REQUEST_ACTION = "li.kta.status.request"
 
         private lateinit var mqttService: MqttService
 
         fun initializeMqttService(context: Context, sensors: Array<SensorEntity>) {
             mqttService = MqttService(context, sensors)
             mqttService.initialize()
+            mqttService.initializePeriodicHealthCheck()
             Log.i(TAG, "MqttService initialized")
         }
 
@@ -69,18 +69,22 @@ class MqttService(
     }
 
     private lateinit var mqttClient: MqttAndroidClient
+    private lateinit var periodicHealthCheckJob: Job
 
     /**
      * Initialize connection to the MQTT server. Should be alive when the app is alive.
      */
-    public fun initialize() {
+    fun initialize() {
         mqttClient = MqttAndroidClient(context, SERVER_URI, UUID.randomUUID().toString())
         mqttClient.setCallback(this)
         mqttClient.connect(MqttConnectOptions().apply { isAutomaticReconnect = true })
     }
 
-    public fun destroy() {
+    fun destroy() {
         mqttClient.disconnect()
+        if (periodicHealthCheckJob.isActive) {
+            periodicHealthCheckJob.cancel()
+        }
     }
 
     /**
@@ -92,30 +96,23 @@ class MqttService(
     }
 
     fun healthCheck(sensor: SensorEntity) {
-        val preferences =
-            context.getSharedPreferences(SettingsActivity.PREFERENCES_FILE, Context.MODE_PRIVATE)
-        val token = preferences.getString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, "")
-        val msg = MqttMessage("{\"token\": \"$token\"}".toByteArray())
+        if (mqttClient.isConnected) {
+            val preferences =
+                context.getSharedPreferences(SettingsActivity.PREFERENCES_FILE, Context.MODE_PRIVATE)
+            val token = preferences.getString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, "")
+            val msg = MqttMessage("{\"token\": \"$token\"}".toByteArray())
+            mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, msg)
+            Log.i(TAG, "Sent health check msg to ${sensor.name} with token $token")
 
-        mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, msg)
-        Log.i(TAG, "Sent health check msg to ${sensor.name} with token $token")
-
-        sensor.lastHealthCheck = ZonedDateTime.now()
-        LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
+            sensor.lastHealthCheck = ZonedDateTime.now()
+            LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
+        }
     }
 
     fun healthCheckAllSensors() {
         sensors.forEach {
             healthCheck(it)
         }
-
-        val scope = CoroutineScope(Dispatchers.Default)
-        scope.launch {
-            delay(300)
-            context.sendBroadcast(
-                Intent(HEALTH_CHECK_COMPLETE))
-        }
-
     }
 
     fun turnOnOff(sensor: SensorEntity) {
@@ -123,6 +120,19 @@ class MqttService(
         val msg = MqttMessage("{active: $activityStatus}".toByteArray())
         mqttClient.publish(SENSOR_CONFIG_TOPIC_PREFIX + sensor.deviceId, msg)
         Log.i(TAG, "Turned on/off sensor ${sensor.name}")
+    }
+
+    fun initializePeriodicHealthCheck() {
+        periodicHealthCheckJob = CoroutineScope(Dispatchers.Default).launch {
+            while (true) {
+                healthCheckAllSensors()
+                context.sendBroadcast(
+                    Intent(STATUS_REQUEST_ACTION)
+                )
+                delay(HEALTH_HEARTBEAT_INTERVAL)
+            }
+        }
+        periodicHealthCheckJob.start()
     }
 
     /**
