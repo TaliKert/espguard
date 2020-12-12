@@ -22,10 +22,12 @@ import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
 /** TODO
- *    - Node configuration communication
- *      * Time of day
- *      * cooldown period (how long to wait until next alert)
+ *    - HEALTH CHECK BUTTON user feedback?
+ *    - MQTT Toast remove, because theme switch
+ *    - ON/OFF display for sensors
  *    - More settings
+ *    - Name change conf
+ *    - Show device name and id in conf
  *    - Health check at adding new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
@@ -105,13 +107,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, AddSensorActivity::class.java))
     }
 
-    private fun openSensorConfiguration(sensor: SensorEntity) {
-        Log.i(TAG, "Opening configurations view for sensor $sensor")
-        val intent = Intent(this, ConfigureSensorActivity::class.java)
-        intent.putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id)
-        startActivity(intent)
-    }
-
     private fun openSensorDetailsView(sensor: SensorEntity) {
         Log.i(TAG, "Opening details view for sensor $sensor")
         startActivity(
@@ -131,5 +126,4 @@ class MainActivity : AppCompatActivity() {
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
         sensorAdapter.data = model.sensorArray
     }
-
 }
