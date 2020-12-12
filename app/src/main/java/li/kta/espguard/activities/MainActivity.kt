@@ -25,16 +25,14 @@ import li.kta.espguard.room.SensorEntity
  *    - Node configuration communication
  *      * Time of day
  *      * cooldown period (how long to wait until next alert)
- *    - Firebase cloud messaging!
  *    - More settings
- *
+ *    - Health check at adding new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
  *    - Make use of string formatting at least once
  *    - colors.xml and styles.xml
  *    - Dimensions in dimens.xml
  *    - The app uses threading to delegate work off UI thread: result of background work should still be notified in the UI
- *    - 
  */
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -83,7 +81,6 @@ class MainActivity : AppCompatActivity() {
         model.refresh()
         sensorAdapter.data = model.sensorArray
     }
-
 
     override fun onDestroy() {
         MqttService.destroyMqttService()

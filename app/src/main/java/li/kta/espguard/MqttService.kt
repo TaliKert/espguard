@@ -142,17 +142,19 @@ class MqttService(
 
         if (topic != null) {
             val deviceId = topic.split("/").last()
-            val sensor: SensorEntity = LocalSensorDb.getInstance(context).getSensorDao().findSensorByDeviceId(deviceId)
-            val json = Gson().fromJson(message.toString(), JsonObject::class.java)
-            sensor.turnedOn = json.get("active").asBoolean
-            sensor.successfulHealthCheck = ZonedDateTime.now()
-            LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
+            val sensor = LocalSensorDb.getInstance(context).getSensorDao().findSensorByDeviceId(deviceId)
+            if (sensor != null) {
+                val json = Gson().fromJson(message.toString(), JsonObject::class.java)
+                sensor.turnedOn = json.get("active").asBoolean
+                sensor.successfulHealthCheck = ZonedDateTime.now()
+                LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
 
-            context.sendBroadcast(
-                Intent(STATUS_RESPONSE_ACTION)
-                    .putExtra("deviceId", deviceId)
-                    .putExtra("message", message.toString())
-            )
+                context.sendBroadcast(
+                    Intent(STATUS_RESPONSE_ACTION)
+                        .putExtra("deviceId", deviceId)
+                        .putExtra("message", message.toString())
+                )
+            }
         }
     }
 

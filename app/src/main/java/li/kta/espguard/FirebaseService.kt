@@ -1,16 +1,27 @@
 package li.kta.espguard
 
+import android.R
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
+import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import li.kta.espguard.activities.MainActivity
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.room.EventEntity
 import li.kta.espguard.room.LocalSensorDb
 import java.time.Instant
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 class FirebaseService : FirebaseMessagingService() {
 
@@ -39,21 +50,61 @@ class FirebaseService : FirebaseMessagingService() {
 
 
     override fun onMessageReceived(message: RemoteMessage) {
-
         val data = message.data
-        val event = EventEntity(0,
-            data["deviceId"],
-            ZonedDateTime.ofInstant(
-                data["timestamp"]?.toLong()?.let { Instant.ofEpochSecond(it) },
-                TimeZone.getDefault().toZoneId()
-            )
-        )
 
-        LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
+        data["deviceId"]?.let {
+            val sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorByDeviceId(it)
+            if (sensor != null) {
+                val event = EventEntity(0,
+                    data["deviceId"],
+                    ZonedDateTime.ofInstant(
+                        data["timestamp"]?.toLong()?.let { Instant.ofEpochSecond(it) },
+                        TimeZone.getDefault().toZoneId()
+                    )
+                )
 
-        this.sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
+                LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
 
-        Log.i(TAG, event.toString())
-        Log.i(TAG, data.toString())
+                // 'Esik' detected movement at 02:07 on Saturday, Dec 12
+                sendNotification("'${sensor.name}' detected movement at ${event.eventTime?.format(
+                    DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))}")
+
+                this.sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
+
+                Log.i(TAG, event.toString())
+                Log.i(TAG, data.toString())
+            }
+        }
+    }
+
+    /** TODO how to get this to send the user to the details view when clicking the notification
+     * https://github.com/firebase/quickstart-android/blob/master/messaging/app/src/main/java/com/google/firebase/quickstart/fcm/kotlin/MyFirebaseMessagingService.kt
+     */
+    private fun sendNotification(message: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+            PendingIntent.FLAG_ONE_SHOT)
+
+        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val notificationBuilder = NotificationCompat.Builder(this, "default") // TODO channelId -> string resource
+            .setSmallIcon(R.drawable.ic_menu_view)
+            .setContentTitle("Movement Alert") // TODO String resource
+            .setContentText(message)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setContentIntent(pendingIntent)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel("default",
+                "Channel human readable title",
+                NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
     }
 }

@@ -52,6 +52,7 @@ void setup() {
   // Setup cloud messaging API
   Firebase.begin(FCM_PROJECTNAME, "");
   Firebase.reconnectWiFi(true);
+  Firebase.setMaxRetry(firebaseData, 3);
   firebaseData.fcm.begin(FCM_APIKEY);
   
 //// Not implemented power saving switch
@@ -161,9 +162,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
           registeredTokenCount++;
         }
     }
-    sendStatus(); 
+    sendStatus();
   }
-  
+
   
   if (!memcmp(&topic[9], (char*)"config", 6)) {
     Serial.println("config command");
@@ -200,6 +201,9 @@ void reconnect() {
       );
       mqttClient.subscribe(
         ("espguard/health/" + String(DEVICE_ID)).c_str(), 1
+      );
+      mqttClient.subscribe(
+        ("espguard/delete/" + String(DEVICE_ID)).c_str(), 1
       );
     } else {
       Serial.print("failed, rc=");
