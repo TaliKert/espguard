@@ -62,7 +62,8 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
             tv_sensor_id.text = sensor.deviceId.toString()
             status_svg.setImageResource(getStatusDrawableResId(sensor))
 
-            button_details.setOnClickListener { listener.onButtonClick(sensor) }
+            setOnClickListener { listener.onButtonClick(sensor) }
+            /*button_details.setOnClickListener { listener.onButtonClick(sensor) }*/
         }
 
     }

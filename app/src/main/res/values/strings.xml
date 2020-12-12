@@ -11,4 +11,5 @@
   <string name="ignore_notifications">Ignore notifications</string>
   <string name="time">TIME</string>
   <string name="event_id">ID</string>
+  <string name="sensors">Sensors:</string>
 </resources>
