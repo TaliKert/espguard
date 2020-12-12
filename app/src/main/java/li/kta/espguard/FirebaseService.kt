@@ -66,8 +66,11 @@ class FirebaseService : FirebaseMessagingService() {
                 LocalSensorDb.getInstance(this).getEventDao().insertEvents(event)
 
                 // 'Esik' detected movement at 02:07 on Saturday, Dec 12
-                sendNotification("'${sensor.name}' detected movement at ${event.eventTime?.format(
-                    DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))}")
+                if (!ignoreNotifications()) {
+                    sendNotification("'${sensor.name}' detected movement at ${event.eventTime?.format(
+                        DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))}")
+                }
+
 
                 this.sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
 
@@ -75,6 +78,12 @@ class FirebaseService : FirebaseMessagingService() {
                 Log.i(TAG, data.toString())
             }
         }
+    }
+
+    private fun ignoreNotifications(): Boolean {
+        val preferences =
+            this.getSharedPreferences(SettingsActivity.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        return preferences.getBoolean(SettingsActivity.PREFERENCES_IGNORE_NOTIFICATIONS, false)
     }
 
     /** TODO how to get this to send the user to the details view when clicking the notification
@@ -95,6 +104,8 @@ class FirebaseService : FirebaseMessagingService() {
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
 
+        putNotificationsOnQuiet(notificationBuilder)
+
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Since android Oreo notification channel is needed.
@@ -106,5 +117,15 @@ class FirebaseService : FirebaseMessagingService() {
         }
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
+    }
+
+    fun putNotificationsOnQuiet(notificationBuilder: NotificationCompat.Builder) {
+        val preferences =
+            this.getSharedPreferences(SettingsActivity.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        val setNotificationsQuiet = preferences.getBoolean(SettingsActivity.PREFERENCES_QUIET_NOTIFICATIONS, false)
+
+        if (setNotificationsQuiet) {
+            notificationBuilder.setNotificationSilent()
+        }
     }
 }

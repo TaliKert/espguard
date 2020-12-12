@@ -16,6 +16,8 @@ class SettingsActivity : AppCompatActivity() {
         const val PREFERENCES_FILE = "prefs"
         const val PREFERENCES_DARK_THEME = "dark_theme"
         const val PREFERENCES_FIREBASE_TOKEN = "token"
+        const val PREFERENCES_QUIET_NOTIFICATIONS = "quiet_notifications"
+        const val PREFERENCES_IGNORE_NOTIFICATIONS = "ignore_notifications"
 
         fun setTheme(context: Context) {
             val preferences =
@@ -28,6 +30,7 @@ class SettingsActivity : AppCompatActivity() {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
         }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,25 +39,60 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         loadThemeSwitchValue()
+        loadIgnoreSwitchValue()
+        loadQuietSwitchValue()
+
 
         switch_theme.setOnCheckedChangeListener { _, isChecked ->
             toggleThemeSwitch(isChecked)
+        }
+
+        switch_ignore_notifications.setOnCheckedChangeListener { _, isChecked ->
+            toggleIgnoreSwitch(isChecked)
+        }
+
+        switch_quiet_notifications.setOnCheckedChangeListener { _, isChecked ->
+            toggleQuietSwitch(isChecked)
         }
 
         button_clear_events.setOnClickListener { clearEvents() }
 
     }
 
+    private fun loadThemeSwitchValue() {
+        val preferences =
+            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
+        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_DARK_THEME, false)
+    }
+
+    private fun loadQuietSwitchValue() {
+        val preferences =
+            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
+        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_QUIET_NOTIFICATIONS, false)
+    }
+
+    private fun loadIgnoreSwitchValue() {
+        val preferences =
+            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
+        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_IGNORE_NOTIFICATIONS, false)
+    }
+
+    private fun toggleQuietSwitch(isChecked: Boolean) {
+        val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
+        editor.putBoolean(PREFERENCES_QUIET_NOTIFICATIONS, isChecked)
+        editor.apply()
+    }
+
+    private fun toggleIgnoreSwitch(isChecked: Boolean) {
+        val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
+        editor.putBoolean(PREFERENCES_IGNORE_NOTIFICATIONS, isChecked)
+        editor.apply()
+    }
+
     private fun clearEvents() {
         LocalSensorDb.getInstance(this).getEventDao().nukeTable()
     }
 
-    private fun loadThemeSwitchValue() {
-        val preferences =
-            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
-        val useDarkTheme = preferences.getBoolean(PREFERENCES_DARK_THEME, false)
-        switch_theme.isChecked = useDarkTheme
-    }
 
     private fun toggleThemeSwitch(isChecked: Boolean) {
         val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()

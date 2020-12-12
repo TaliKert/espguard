@@ -1,3 +1,14 @@
 <resources>
   <string name="app_name">espguard</string>
+  <string name="device_name">Name</string>
+  <string name="add_sensor">ADD SENSOR</string>
+  <string name="device_id">ID</string>
+  <string name="health_check">HEALTH CHECK</string>
+  <string name="sensor_on">Sensor ON</string>
+  <string name="dark_theme">Turn on dark theme</string>
+  <string name="delete_all_events">DELETE ALL EVENTS</string>
+  <string name="notifications_on_quiet">Put notifications on quiet</string>
+  <string name="ignore_notifications">Ignore notifications</string>
+  <string name="time">TIME</string>
+  <string name="event_id">ID</string>
 </resources>

@@ -23,9 +23,7 @@ import li.kta.espguard.room.SensorEntity
 
 /** TODO
  *    - HEALTH CHECK BUTTON user feedback?
- *    - MQTT Toast remove, because theme switch
  *    - ON/OFF display for sensors
- *    - More settings
  *    - Name change conf
  *    - Show device name and id in conf
  *    - Health check at adding new device
@@ -75,7 +73,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
         refreshData()
     }
 

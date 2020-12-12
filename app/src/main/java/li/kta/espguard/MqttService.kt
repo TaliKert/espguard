@@ -130,7 +130,6 @@ class MqttService(
      */
     override fun connectComplete(reconnect: Boolean, serverURI: String?) {
         Log.i(TAG, "MQTT Connected")
-        Toast.makeText(context, "MQTT Connected, subscribing...", Toast.LENGTH_SHORT).show()
         for (sensor in sensors) {
             subscribe(sensor)
         }

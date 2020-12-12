@@ -7,24 +7,44 @@
   tools:context=".activities.SettingsActivity">
 
 
-
   <Switch
     android:id="@+id/switch_theme"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="Dark theme"
+    android:layout_marginTop="24dp"
+    android:text="@string/dark_theme"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"/>
+    app:layout_constraintTop_toTopOf="parent" />
 
   <Button
     android:id="@+id/button_clear_events"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="24dp"
-    android:text="DELETE ALL EVENTS"
+    android:text="@string/delete_all_events"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/switch_theme" />
+
+  <Switch
+    android:id="@+id/switch_quiet_notifications"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="24dp"
+    android:text="@string/notifications_on_quiet"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/button_clear_events" />
+
+  <Switch
+    android:id="@+id/switch_ignore_notifications"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="24dp"
+    android:text="@string/ignore_notifications"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/switch_quiet_notifications" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
