@@ -78,6 +78,7 @@ void loop() {
   if (movementDetected) notifyMovement();
 }
 
+int firebaseRetries = 0;
 void notifyMovement() {
   Serial.println("Movement detected");
   movementDetected = false;
@@ -103,16 +104,24 @@ void notifyMovement() {
   serializeJson(jsonPayload, output);
   Serial.println(output);
   firebaseData.fcm.setDataMessage(output);
+
   if (Firebase.broadcastMessage(firebaseData)) {
-      Serial.println("PASSED");
-      Serial.println(firebaseData.fcm.getSendResult());
-      Serial.println("------------------------------------");
-      Serial.println();
+    Serial.println("PASSED");
+    Serial.println(firebaseData.fcm.getSendResult());
+    Serial.println("------------------------------------");
+    Serial.println();
   } else {
-      Serial.println("FAILED");
-      Serial.println("REASON: " + firebaseData.errorReason());
-      Serial.println("------------------------------------");
-      Serial.println();
+    Serial.println("FAILED");
+    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+    if (firebaseRetries > 2) {
+      firebaseRetries = 0;
+      Serial.println("Notification sending failed after 3 retries, something is very wrong.");
+    } else {
+      movementDetected = true;
+      lastNotificationTimestamp = 0; // Try again on the next loop iteration.
+    }
   }
 }
 
