@@ -125,7 +125,16 @@ class MainActivity : AppCompatActivity() {
 
         if (resultCode == RESULT_ADDED_SENSOR) {
             refreshData()
-            MqttService.getInstance()?.healthCheckAllSensors()
+            MqttService.getInstance()?.apply {
+                if (data != null) {
+                    val sensor: SensorEntity? =
+                        data.getParcelableExtra<SensorEntity>("addedSensor")
+                    if (sensor != null) {
+                        subscribe(sensor)
+                        healthCheck(sensor)
+                    }
+                }
+            }
         }
     }
 
