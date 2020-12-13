@@ -14,6 +14,7 @@
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/Theme.Espguard">
+
     <service android:name=".FirebaseService">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -22,8 +23,8 @@
 
     <activity android:name=".activities.SensorDetailsActivity" />
     <activity android:name=".activities.SettingsActivity" />
-    <activity android:name=".activities.ConfigureSensorActivity" />
-    <activity android:name=".activities.AddSensorActivity" />
+    <activity android:name=".activities.SensorConfigurationActivity" />
+    <activity android:name=".activities.SensorAddingActivity" />
     <activity android:name=".activities.MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

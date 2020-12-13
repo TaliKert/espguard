@@ -2,17 +2,20 @@ package li.kta.espguard.activities
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import kotlinx.android.synthetic.main.activity_sensor_details.*
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import kotlinx.android.synthetic.main.activity_settings.*
 import li.kta.espguard.R
 import li.kta.espguard.room.LocalSensorDb
 
 
 class SettingsActivity : AppCompatActivity() {
-
     companion object {
+        private val TAG: String = SettingsActivity::class.java.name
+
         const val PREFERENCES_FILE = "prefs"
         const val PREFERENCES_DARK_THEME = "dark_theme"
         const val PREFERENCES_FIREBASE_TOKEN = "token"
@@ -20,85 +23,67 @@ class SettingsActivity : AppCompatActivity() {
         const val PREFERENCES_IGNORE_NOTIFICATIONS = "ignore_notifications"
 
         fun setTheme(context: Context) {
-            val preferences =
-                context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
-            val useDarkTheme = preferences.getBoolean(PREFERENCES_DARK_THEME, false)
+            val useDarkTheme = getBooleanPreference(context, PREFERENCES_DARK_THEME)
+            Log.i(TAG, "Setting theme of $context to dark: $useDarkTheme")
 
-            if (useDarkTheme) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
+            AppCompatDelegate.setDefaultNightMode(
+                if (useDarkTheme) MODE_NIGHT_YES else MODE_NIGHT_NO
+            )
         }
 
+        private fun getBooleanPreference(context: Context, pref: String) =
+            getSharedPreferences(context).getBoolean(pref, false)
+
+        private fun getSharedPreferences(context: Context) =
+            context.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(this)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        loadThemeSwitchValue()
-        loadIgnoreSwitchValue()
-        loadQuietSwitchValue()
-
-
-        switch_theme.setOnCheckedChangeListener { _, isChecked ->
-            toggleThemeSwitch(isChecked)
-        }
-
-        switch_ignore_notifications.setOnCheckedChangeListener { _, isChecked ->
-            toggleIgnoreSwitch(isChecked)
-        }
-
-        switch_quiet_notifications.setOnCheckedChangeListener { _, isChecked ->
-            toggleQuietSwitch(isChecked)
-        }
-
-        button_clear_events.setOnClickListener { clearEvents() }
-
+        loadSwitchValues()
+        setupButtons()
     }
 
-    private fun loadThemeSwitchValue() {
-        val preferences =
-            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
-        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_DARK_THEME, false)
+    private fun setupButtons() {
+        listOf(
+            button_switch_theme to ::toggleThemeSwitch,
+            switch_ignore_notifications to ::toggleIgnoreSwitch,
+            switch_quiet_notifications to ::toggleQuietSwitch,
+            button_clear_events to ::clearEvents
+        ).forEach { (button, action) -> button.setOnClickListener { action() } }
     }
 
-    private fun loadQuietSwitchValue() {
-        val preferences =
-            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
-        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_QUIET_NOTIFICATIONS, false)
+    private fun loadSwitchValues() {
+        switch_quiet_notifications.isChecked = getBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
+        switch_ignore_notifications.isChecked =
+            getBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
     }
 
-    private fun loadIgnoreSwitchValue() {
-        val preferences =
-            getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
-        switch_theme.isChecked = preferences.getBoolean(PREFERENCES_IGNORE_NOTIFICATIONS, false)
-    }
+    private fun toggleQuietSwitch() = invertBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
 
-    private fun toggleQuietSwitch(isChecked: Boolean) {
-        val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
-        editor.putBoolean(PREFERENCES_QUIET_NOTIFICATIONS, isChecked)
-        editor.apply()
-    }
-
-    private fun toggleIgnoreSwitch(isChecked: Boolean) {
-        val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
-        editor.putBoolean(PREFERENCES_IGNORE_NOTIFICATIONS, isChecked)
-        editor.apply()
-    }
+    private fun toggleIgnoreSwitch() = invertBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
 
     private fun clearEvents() {
-        LocalSensorDb.getInstance(this).getEventDao().nukeTable()
+        LocalSensorDb.getEventDao(this).nukeTable()
     }
 
 
-    private fun toggleThemeSwitch(isChecked: Boolean) {
-        val editor = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
-        editor.putBoolean(PREFERENCES_DARK_THEME, isChecked)
-        editor.apply()
-        setTheme(this)
+    private fun toggleThemeSwitch() {
+        invertBooleanPreference(PREFERENCES_DARK_THEME)
+        recreate()
     }
 
+    private fun invertBooleanPreference(pref: String): Unit =
+        getSharedPreferencesEditor().let {
+            it.putBoolean(pref, !getBooleanPreference(pref))
+            it.apply()
+        }
+
+    private fun getBooleanPreference(pref: String) = getBooleanPreference(this, pref)
+
+    private fun getSharedPreferencesEditor() = Companion.getSharedPreferences(this).edit()
 }

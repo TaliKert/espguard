@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="dark_theme">Turn on light theme</string>
+    <string name="dark_theme">Switch to Light Theme</string>
 </resources>

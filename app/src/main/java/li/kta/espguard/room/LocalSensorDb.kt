@@ -7,10 +7,10 @@ import java.time.format.DateTimeFormatter
 
 @Database(entities = [SensorEntity::class, EventEntity::class], version = 6, exportSchema = false)
 @TypeConverters(ZDTConverter::class)
-abstract class LocalSensorDb: RoomDatabase() {
+abstract class LocalSensorDb : RoomDatabase() {
 
-  companion object {
-    private lateinit var dbInstance: LocalSensorDb
+    companion object {
+        private lateinit var dbInstance: LocalSensorDb
 
         @Synchronized
         fun getInstance(context: Context): LocalSensorDb {
@@ -23,10 +23,14 @@ abstract class LocalSensorDb: RoomDatabase() {
 
             return dbInstance
         }
+
+        fun getSensorDao(context: Context): SensorDao = getInstance(context).getSensorDao()
+
+        fun getEventDao(context: Context): EventDao = getInstance(context).getEventDao()
     }
 
-  abstract fun getSensorDao(): SensorDao
+    abstract fun getSensorDao(): SensorDao
 
-  abstract fun getEventDao(): EventDao
+    abstract fun getEventDao(): EventDao
 
 }

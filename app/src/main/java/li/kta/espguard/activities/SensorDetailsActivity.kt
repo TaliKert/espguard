@@ -36,20 +36,30 @@ class SensorDetailsActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
         val id = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
-        val sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorById(id)
+        val sensor = LocalSensorDb.getSensorDao(this).findSensorById(id)
+
         model = ViewModelProvider(this).get(EventViewModel::class.java)
         model.deviceId = sensor.deviceId.toString()
 
         createAdapter()
         setupFirebaseEventReceiver()
+        setupDetails(sensor)
 
         button_configure_device.setOnClickListener { openSensorConfiguration(id) }
-        button_delete_device.setOnClickListener { deleteSensor(id) }
+        /*button_delete_device.setOnClickListener { deleteSensor(id) }*/
     }
 
-    private fun deleteSensor(id: Int) {
+    private fun setupDetails(sensor: SensorEntity) {
+        tv_sensor_name.text = resources.getString(R.string.sensor_name_template, sensor.name)
+        tv_sensor_id.text = resources.getString(R.string.sensor_id_template, sensor.deviceId)
 
-        val sensor = LocalSensorDb.getInstance(applicationContext).getSensorDao().findSensorById(id)
+        tv_sensor_status.text = resources.getString(
+                R.string.sensor_status_template,
+                resources.getString(sensor.getStatus().textResource))
+    }
+
+    /*private fun deleteSensor(id: Int) {
+        val sensor = LocalSensorDb.getSensorDao(applicationContext).findSensorById(id)
 
         removeEventsFromDatabase(sensor)
         removeSensorFromDatabase(sensor)
@@ -60,15 +70,14 @@ class SensorDetailsActivity : AppCompatActivity() {
 
     private fun removeEventsFromDatabase(sensor: SensorEntity) {
         sensor.deviceId?.let {
-            val events =
-                LocalSensorDb.getInstance(applicationContext).getEventDao().findEventsByDeviceId(it)
-            LocalSensorDb.getInstance(applicationContext).getEventDao().deleteEvents(*events)
+            LocalSensorDb.getEventDao(applicationContext).deleteEvents(
+                    *LocalSensorDb.getEventDao(applicationContext).findEventsByDeviceId(it))
         }
     }
 
     private fun removeSensorFromDatabase(sensor: SensorEntity) {
-        LocalSensorDb.getInstance(applicationContext).getSensorDao().deleteSensor(sensor)
-    }
+        LocalSensorDb.getSensorDao(applicationContext).deleteSensor(sensor)
+    }*/
 
     override fun onResume() {
         super.onResume()
@@ -88,10 +97,9 @@ class SensorDetailsActivity : AppCompatActivity() {
                 refreshData()
             }
         }
-        registerReceiver(
-            firebaseEventReceiver,
-            IntentFilter(FirebaseService.STATUS_RESPONSE_ACTION)
-        )
+
+        registerReceiver(firebaseEventReceiver,
+                         IntentFilter(FirebaseService.STATUS_RESPONSE_ACTION))
     }
 
     fun refreshData() {
@@ -111,15 +119,15 @@ class SensorDetailsActivity : AppCompatActivity() {
     }
 
     private fun getSensorEntity(sensorId: Int): SensorEntity? {
-        return LocalSensorDb.getInstance(applicationContext).getSensorDao().findSensorById(sensorId)
+        return LocalSensorDb.getSensorDao(applicationContext).findSensorById(sensorId)
     }
 
 
     private fun openSensorConfiguration(sensor: SensorEntity) {
         Log.i(TAG, "Opening configurations view for sensor $sensor")
-        startActivity(
-            Intent(this, ConfigureSensorActivity::class.java)
-                .apply { putExtra(ConfigureSensorActivity.EXTRA_SENSOR_ID, sensor.id) })
+        startActivity(Intent(this, SensorConfigurationActivity::class.java).apply {
+            putExtra(SensorConfigurationActivity.EXTRA_SENSOR_ID, sensor.id)
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

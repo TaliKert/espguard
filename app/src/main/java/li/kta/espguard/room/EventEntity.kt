@@ -6,7 +6,8 @@ import java.time.ZonedDateTime
 
 @Entity(tableName = "event")
 data class EventEntity(
-    @PrimaryKey(autoGenerate = true) var id: Int,
-    var deviceId: String?,
-    var eventTime: ZonedDateTime?
+        @PrimaryKey(autoGenerate = true)
+        var id: Int = 0,
+        var deviceId: String?,
+        var eventTime: ZonedDateTime?
 )

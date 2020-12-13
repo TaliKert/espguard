@@ -8,38 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
 
 import li.kta.espguard.room.SensorEntity
-import java.time.Instant
-import java.time.Instant.MIN
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 class SensorAdapter(private var listener: SensorAdapterListener) :
-    RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
+        RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
 
     companion object {
         val TAG: String = SensorAdapter::class.java.name
-
-        fun getStatusDrawableResId(sensor: SensorEntity): Int {
-            val last = sensor.lastHealthCheck
-            val prevSuccess = sensor.successfulHealthCheck
-            if (last != null) {
-                if (prevSuccess == null ||
-                    prevSuccess.plusSeconds(14).isBefore(ZonedDateTime.now())) {
-                    return R.drawable.ic_failed_24
-                }
-                if (last.isBefore(prevSuccess)) {
-                    if (sensor.turnedOn)
-                        return R.drawable.ic_healthy_24
-                    else
-                        return R.drawable.ic_switched_off_24
-                } else {
-                    return R.drawable.ic_pending_24
-                }
-            }
-            return R.drawable.ic_failed_24
-        }
     }
-
 
 
     interface SensorAdapterListener {
@@ -54,15 +30,11 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
 
     inner class SensorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SensorViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.sensor_list_item, parent, false)
-        return SensorViewHolder(view)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SensorViewHolder =
+            SensorViewHolder(LayoutInflater.from(parent.context)
+                                     .inflate(R.layout.sensor_list_item, parent, false))
 
-    override fun getItemCount(): Int {
-        return data.size
-    }
+    override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: SensorViewHolder, position: Int) {
         val sensor = data[position]
@@ -72,12 +44,14 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
         holder.itemView.apply {
             tv_sensor_name.text = sensor.name.toString()
             tv_sensor_id.text = sensor.deviceId.toString()
-            status_svg.setImageResource(getStatusDrawableResId(sensor))
+
+            val status = sensor.getStatus()
+
+            status_svg.setImageResource(status.iconResource)
+            tv_sensor_status.setText(status.textResource)
 
             setOnClickListener { listener.onButtonClick(sensor) }
-            /*button_details.setOnClickListener { listener.onButtonClick(sensor) }*/
         }
-
     }
 
     fun changeSensorStatusesPending() {

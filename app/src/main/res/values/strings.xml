@@ -1,15 +1,30 @@
 <resources>
-  <string name="app_name">espguard</string>
-  <string name="device_name">Name</string>
-  <string name="add_sensor">ADD SENSOR</string>
-  <string name="device_id">ID</string>
-  <string name="health_check">HEALTH CHECK</string>
-  <string name="sensor_on">Sensor ON</string>
-  <string name="dark_theme">Turn on dark theme</string>
-  <string name="delete_all_events">DELETE ALL EVENTS</string>
-  <string name="notifications_on_quiet">Put notifications on quiet</string>
-  <string name="ignore_notifications">Ignore notifications</string>
-  <string name="time">TIME</string>
-  <string name="event_id">ID</string>
-  <string name="sensors">Sensors:</string>
+    <string name="app_name">espguard</string>
+    <string name="add_sensor">ADD SENSOR</string>
+    <string name="health_check">HEALTH CHECK</string>
+    <string name="dark_theme">Switch to Dark Theme</string>
+    <string name="delete_all_events">DELETE ALL EVENTS</string>
+    <string name="notifications_on_quiet">Put notifications on quiet</string>
+    <string name="ignore_notifications">Ignore notifications</string>
+    <string name="time">TIME</string>
+    <string name="application_settings">Application Settings</string>
+
+    <string name="sensors">Sensors:</string>
+    <string name="sensor_name">Sensor Name</string>
+    <string name="sensor_name_template">Name: %s</string>
+    <string name="sensor_id">Sensor ID</string>
+    <string name="sensor_id_template">ID: %s</string>
+    <string name="sensor_status">Sensor Status</string>
+    <string name="sensor_status_template">Status: %s</string>
+
+    <string name="sensor_status_failed">connection failed</string>
+    <string name="sensor_status_pending">connection pending</string>
+    <string name="sensor_status_healthy">healthy</string>
+    <string name="sensor_status_off">switched off</string>
+
+    <string name="event_id">ID</string>
+
+    <string name="sensor_on">Sensor ON</string>
+    <string name="configure">CONFIGURE</string>
+    <string name="delete_device">DELETE DEVICE</string>
 </resources>

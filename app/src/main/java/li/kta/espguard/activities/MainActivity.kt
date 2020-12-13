@@ -8,32 +8,30 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.*
 import li.kta.espguard.MqttService.Companion.STATUS_REQUEST_ACTION
 import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
-import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
 /** TODO
  *    - HEALTH CHECK BUTTON user feedback?
  *    - ON/OFF display for sensors
+ *    - Sensor deletion button to configuration activity
+ *    - Sensor deletion to retreat to main view, instead of details view
+ *    - Properly formatted event history: replace id, format time
  *    - Name change conf
- *    - Show device name and id in conf
  *    - Health check at adding new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
- *    - Make use of string formatting at least once
  *    - colors.xml and styles.xml
  *    - Dimensions in dimens.xml
  *    - The app uses threading to delegate work off UI thread: result of background work should still be notified in the UI
+ *    - Actually test deleting data in app settings
  */
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -111,7 +109,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openNewSensorView() {
-        startActivity(Intent(this, AddSensorActivity::class.java))
+        startActivity(Intent(this, SensorAddingActivity::class.java))
     }
 
     private fun openSensorDetailsView(sensor: SensorEntity) {

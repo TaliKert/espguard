@@ -55,9 +55,9 @@ class FirebaseService : FirebaseMessagingService() {
         data["deviceId"]?.let {
             val sensor = LocalSensorDb.getInstance(this).getSensorDao().findSensorByDeviceId(it)
             if (sensor != null) {
-                val event = EventEntity(0,
-                    data["deviceId"],
-                    ZonedDateTime.ofInstant(
+                val event = EventEntity(
+                    deviceId = data["deviceId"],
+                    eventTime = ZonedDateTime.ofInstant(
                         data["timestamp"]?.toLong()?.let { Instant.ofEpochSecond(it) },
                         TimeZone.getDefault().toZoneId()
                     )

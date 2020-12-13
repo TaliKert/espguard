@@ -3,11 +3,12 @@ package li.kta.espguard
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import li.kta.espguard.room.LocalSensorDb
+import li.kta.espguard.room.SensorDao
 import li.kta.espguard.room.SensorEntity
 
 class SensorViewModel(application: Application) : AndroidViewModel(application) {
 
-    var localDb: LocalSensorDb = LocalSensorDb.getInstance(application)
+    var sensorDao: SensorDao = LocalSensorDb.getSensorDao(application)
     var sensorArray: Array<SensorEntity> = arrayOf()
 
     init {
@@ -15,7 +16,7 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun refresh() {
-        sensorArray = localDb.getSensorDao().loadAllSensors()
+        sensorArray = sensorDao.loadAllSensors()
     }
 
 }
