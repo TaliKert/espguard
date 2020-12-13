@@ -83,7 +83,7 @@ class MqttService(private val context: Context, var sensors: Array<SensorEntity>
     }
 
     /** Call this method if you bind a new sensor to your app */
-    private fun subscribe(sensor: SensorEntity) {
+    fun subscribe(sensor: SensorEntity) {
         mqttClient?.subscribe(SENSOR_STATUS_TOPIC_PREFIX + sensor.deviceId, 1)
     }
 

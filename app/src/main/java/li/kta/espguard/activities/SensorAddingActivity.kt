@@ -53,7 +53,8 @@ class SensorAddingActivity : AppCompatActivity() {
 
         LocalSensorDb.getSensorDao(this).insertSensors(sensor)
         Toast.makeText(this, "Added sensor ${sensor.name}", Toast.LENGTH_SHORT).show()
-        setResult(RESULT_ADDED_SENSOR)
+        setResult(RESULT_ADDED_SENSOR, Intent().putExtra("addedSensor", sensor))
+
         finish()
     }
 

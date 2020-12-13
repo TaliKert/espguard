@@ -1,10 +1,13 @@
 package li.kta.espguard.room
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
 import li.kta.espguard.R
 import java.time.ZonedDateTime
 
+@Parcelize
 @Entity(tableName = "sensor")
 data class SensorEntity(
         @PrimaryKey(autoGenerate = true)
@@ -14,8 +17,9 @@ data class SensorEntity(
         var turnedOn: Boolean = false,
         var lastHealthCheck: ZonedDateTime? = null,
         var successfulHealthCheck: ZonedDateTime? = null
-) {
-    enum class Status(val iconResource: Int, val textResource: Int) {
+) : Parcelable {
+
+  enum class Status(val iconResource: Int, val textResource: Int) {
         FAILED(R.drawable.ic_failed_24, R.string.sensor_status_failed),
         PENDING(R.drawable.ic_pending_24, R.string.sensor_status_pending),
         HEALTHY(R.drawable.ic_healthy_24, R.string.sensor_status_healthy),
