@@ -30,6 +30,8 @@ class FirebaseService : FirebaseMessagingService() {
     companion object {
         const val TAG = "FirebaseService"
         const val STATUS_RESPONSE_ACTION = "firebase movement event"
+
+        const val NOTIFICATIONS_CHANNEL_ID = "default"
     }
 
     /**
@@ -54,24 +56,26 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage): Unit = onMessageReceived(message.data)
 
     private fun onMessageReceived(data: Map<String, String>) {
-        data["deviceId"]?.let { deviceId ->
-            val sensor = LocalSensorDb.getSensorDao(this).findSensorByDeviceId(deviceId) ?: return
+        data["deviceId"]?.let { onMessageReceived(data, it) }
+    }
 
-            val event = EventEntity(deviceId = deviceId, eventTime = getEventTime(data["timestamp"]))
+    private fun onMessageReceived(data: Map<String, String>, deviceId: String) {
+        val sensor = LocalSensorDb.getSensorDao(this).findSensorByDeviceId(deviceId) ?: return
 
-            LocalSensorDb.getEventDao(this).insertEvents(event)
+        val event = EventEntity(deviceId = deviceId, eventTime = getEventTime(data["timestamp"]))
 
-            // 'Esik' detected movement at 02:07 on Saturday, Dec 12
-            if (!ignoreNotifications())
-                sendNotification(resources.getString(R.string.notification_text_template,
-                                                     sensor.name,
-                                                     event.eventTime?.let { formateDate(it) }))
+        LocalSensorDb.getEventDao(this).insertEvents(event)
 
-            sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
+        // 'Esik' detected movement at 02:07 on Saturday, Dec 12
+        if (!ignoreNotifications())
+            sendNotification(resources.getString(R.string.notification_text_template,
+                                                 sensor.name,
+                                                 event.eventTime?.let { formattedDate(it) }))
 
-            Log.i(TAG, event.toString())
-            Log.i(TAG, data.toString())
-        }
+        sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
+
+        Log.i(TAG, event.toString())
+        Log.i(TAG, data.toString())
     }
 
     private fun getEventTime(timestamp: String?) = ZonedDateTime.ofInstant(
@@ -79,7 +83,7 @@ class FirebaseService : FirebaseMessagingService() {
             TimeZone.getDefault().toZoneId()
     )
 
-    private fun formateDate(eventTime: ZonedDateTime): String =
+    private fun formattedDate(eventTime: ZonedDateTime): String =
             eventTime.format(DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))
 
 
@@ -90,19 +94,7 @@ class FirebaseService : FirebaseMessagingService() {
      * https://github.com/firebase/quickstart-android/blob/master/messaging/app/src/main/java/com/google/firebase/quickstart/fcm/kotlin/MyFirebaseMessagingService.kt
      */
     private fun sendNotification(message: String) {
-        val intent = Intent(this, MainActivity::class.java)
-                .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
-
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                                                      PendingIntent.FLAG_ONE_SHOT)
-
-        val notificationBuilder = NotificationCompat.Builder(this, "default") // TODO channelId -> string resource
-                .setSmallIcon(R.drawable.ic_baseline_eye_24)
-                .setContentTitle("Movement Alert") // TODO String resource
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setContentIntent(pendingIntent)
+        val notificationBuilder = buildNotification(message)
 
         putNotificationsOnQuiet(notificationBuilder)
 
@@ -111,10 +103,30 @@ class FirebaseService : FirebaseMessagingService() {
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             notificationManager.createNotificationChannel(
-                    NotificationChannel("default", "Channel human readable title",
+                    NotificationChannel(NOTIFICATIONS_CHANNEL_ID,
+                                        "Channel human readable title",
                                         NotificationManager.IMPORTANCE_DEFAULT))
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
+        notificationManager.notify(0 /* auto-generated */, notificationBuilder.build())
+    }
+
+    private fun buildNotification(message: String): NotificationCompat.Builder {
+        val intent = Intent(this, MainActivity::class.java)
+                .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+
+        val pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT)
+
+        return NotificationCompat.Builder(this, NOTIFICATIONS_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_baseline_eye_24)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setContentIntent(pendingIntent)
     }
 
     private fun putNotificationsOnQuiet(notificationBuilder: NotificationCompat.Builder) {
