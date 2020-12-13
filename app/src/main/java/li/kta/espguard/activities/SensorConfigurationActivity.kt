@@ -43,8 +43,8 @@ class SensorConfigurationActivity : AppCompatActivity() {
     }
 
     private fun toggleOnSwitch(sensor: SensorEntity) {
-        sensor.turnedOn != sensor.turnedOn
-        LocalSensorDb.getSensorDao(this).updateSensor(sensor)
+        sensor.turnedOn = !sensor.turnedOn
+        LocalSensorDb.getSensorDao(this).updateSensorTurnedOn(sensor.turnedOn, sensor.id)
         MqttService.getInstance()?.turnOnOff(sensor)
     }
 
@@ -53,9 +53,8 @@ class SensorConfigurationActivity : AppCompatActivity() {
 
         if (newName.isEmpty()) return
 
-        Log.i(TAG, "Changing name of $sensor to $newName")  // TODO: NOT WORKING
-        sensor.name = newName
-        LocalSensorDb.getSensorDao(this).updateSensor(sensor)
+        Log.i(TAG, "Changing name of $sensor to $newName")  // TODO: NOT WORKING (Update: should work now -Kert)
+        LocalSensorDb.getSensorDao(this).updateSensorName(newName, sensor.id)
     }
 
     private fun deleteSensor(id: Int) {

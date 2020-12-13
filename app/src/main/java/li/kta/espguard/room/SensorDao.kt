@@ -1,6 +1,7 @@
 package li.kta.espguard.room
 
 import androidx.room.*
+import java.time.ZonedDateTime
 
 @Dao
 interface SensorDao {
@@ -23,4 +24,12 @@ interface SensorDao {
   @Update
   fun updateSensor(vararg sensors: SensorEntity)
 
+  @Query("UPDATE sensor SET name = :name WHERE id = :id")
+  fun updateSensorName(name: String, id: Int)
+
+  @Query("UPDATE sensor SET turnedOn = :turnedOn WHERE id = :id")
+  fun updateSensorTurnedOn(turnedOn: Boolean, id: Int)
+
+  @Query("UPDATE sensor SET lastHealthCheck = :lastHealthCheck WHERE id = :id")
+  fun updateSensorLastHealthCheck(lastHealthCheck: ZonedDateTime, id: Int)
 }

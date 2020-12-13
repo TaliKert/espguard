@@ -27,7 +27,7 @@ class MqttService(
         private const val TAG = "MqttService"
         private const val SERVER_URI = "tcp://kta.li:1883"
 
-        private const val HEALTH_HEARTBEAT_INTERVAL = 7000L // ms
+        private const val HEALTH_HEARTBEAT_INTERVAL = 15000L // ms
 
         /**
          * Status topic: Any published message by the node (incl. health check).
@@ -104,8 +104,12 @@ class MqttService(
             mqttClient.publish(SENSOR_HEALTH_TOPIC_PREFIX + sensor.deviceId, msg)
             Log.i(TAG, "Sent health check msg to ${sensor.name} with token $token")
 
-            sensor.lastHealthCheck = ZonedDateTime.now()
-            LocalSensorDb.getInstance(context).getSensorDao().updateSensor(sensor)
+            LocalSensorDb.getInstance(context)
+                .getSensorDao()
+                .updateSensorLastHealthCheck(
+                    ZonedDateTime.now(),
+                    sensor.id
+                )
         }
     }
 
