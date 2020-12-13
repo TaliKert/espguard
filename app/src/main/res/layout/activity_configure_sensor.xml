@@ -56,6 +56,17 @@
             app:layout_constraintTop_toBottomOf="@id/switch_sensor_on" />
 
     <Button
+            android:id="@+id/button_delete_events"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="16dp"
+            android:backgroundTint="@color/dangerous_button"
+            android:text="@string/delete_events"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button_health_check" />
+
+    <Button
             android:id="@+id/button_delete_device"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,5 +75,5 @@
             android:text="@string/delete_device"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_health_check" />
+            app:layout_constraintTop_toBottomOf="@id/button_delete_events" />
 </androidx.constraintlayout.widget.ConstraintLayout>

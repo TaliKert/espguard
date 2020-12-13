@@ -4,19 +4,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_sensor_details.*
-import li.kta.espguard.R
 import li.kta.espguard.EventAdapter
 import li.kta.espguard.EventViewModel
 import li.kta.espguard.FirebaseService
+import li.kta.espguard.R
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
@@ -24,32 +23,42 @@ class SensorDetailsActivity : AppCompatActivity() {
     companion object {
         val TAG: String = SensorDetailsActivity::class.java.name
         const val EXTRA_SENSOR_ID = "sensorId"
+        const val REQUEST_CODE_CONFIGURATIONS = 100
     }
 
+    private var id: Int = -1
     private lateinit var model: EventViewModel
     private lateinit var eventAdapter: EventAdapter
-    lateinit var firebaseEventReceiver: BroadcastReceiver
+    private lateinit var firebaseEventReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sensor_details)
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
-        val id = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
-        val sensor = LocalSensorDb.getSensorDao(this).findSensorById(id)
+        Log.i(TAG, "Created the activity.")
 
-        model = ViewModelProvider(this).get(EventViewModel::class.java)
-        model.deviceId = sensor.deviceId.toString()
+        id = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
 
-        createAdapter()
+        setupDetails()
+
         setupFirebaseEventReceiver()
-        setupDetails(sensor)
 
         button_configure_device.setOnClickListener { openSensorConfiguration(id) }
-        /*button_delete_device.setOnClickListener { deleteSensor(id) }*/
     }
 
-    private fun setupDetails(sensor: SensorEntity) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode != REQUEST_CODE_CONFIGURATIONS) return
+
+        when (resultCode) {
+            SensorConfigurationActivity.RESULT_DELETE_SENSOR -> finish()
+            else -> refreshDetails()  // maybe rename, maybe deleted events
+        }
+    }
+
+    private fun setupTextViews(sensor: SensorEntity) {
         tv_sensor_name.text = resources.getString(R.string.sensor_name_template, sensor.name)
         tv_sensor_id.text = resources.getString(R.string.sensor_id_template, sensor.deviceId)
 
@@ -58,26 +67,24 @@ class SensorDetailsActivity : AppCompatActivity() {
                 resources.getString(sensor.getStatus().textResource))
     }
 
-    /*private fun deleteSensor(id: Int) {
-        val sensor = LocalSensorDb.getSensorDao(applicationContext).findSensorById(id)
+    private fun setupDetails() {
+        val sensor = getSensorEntity()
+        Log.i(TAG, "Setting up details for $sensor")
 
-        removeEventsFromDatabase(sensor)
-        removeSensorFromDatabase(sensor)
+        model = ViewModelProvider(this).get(EventViewModel::class.java)
+        model.deviceId = sensor.deviceId.toString()
 
-        Toast.makeText(this, "Deleted device", Toast.LENGTH_SHORT).show()
-        finish()
+        createAdapter()
+
+        setupTextViews(sensor)
     }
 
-    private fun removeEventsFromDatabase(sensor: SensorEntity) {
-        sensor.deviceId?.let {
-            LocalSensorDb.getEventDao(applicationContext).deleteEvents(
-                    *LocalSensorDb.getEventDao(applicationContext).findEventsByDeviceId(it))
-        }
+    private fun refreshDetails() {
+        refreshData()
+        setupTextViews(getSensorEntity())
     }
 
-    private fun removeSensorFromDatabase(sensor: SensorEntity) {
-        LocalSensorDb.getSensorDao(applicationContext).deleteSensor(sensor)
-    }*/
+    private fun getSensorEntity() = LocalSensorDb.getSensorDao(this).findSensorById(id)
 
     override fun onResume() {
         super.onResume()
@@ -125,9 +132,9 @@ class SensorDetailsActivity : AppCompatActivity() {
 
     private fun openSensorConfiguration(sensor: SensorEntity) {
         Log.i(TAG, "Opening configurations view for sensor $sensor")
-        startActivity(Intent(this, SensorConfigurationActivity::class.java).apply {
-            putExtra(SensorConfigurationActivity.EXTRA_SENSOR_ID, sensor.id)
-        })
+        startActivityForResult(Intent(this, SensorConfigurationActivity::class.java)
+                                       .apply { putExtra(EXTRA_SENSOR_ID, sensor.id) },
+                               REQUEST_CODE_CONFIGURATIONS)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
