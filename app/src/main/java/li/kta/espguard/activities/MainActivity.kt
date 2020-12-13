@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         model?.let {
             it.refresh()
             sensorAdapter?.data = it.sensorArray
+            MqttService.getInstance()?.sensors = it.sensorArray
         }
     }
 

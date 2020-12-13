@@ -18,7 +18,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.time.ZonedDateTime
 import java.util.*
 
-class MqttService(private val context: Context, private val sensors: Array<SensorEntity>)
+class MqttService(private val context: Context, var sensors: Array<SensorEntity>)
     : MqttCallbackExtended {
 
     companion object {
