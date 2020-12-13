@@ -17,7 +17,7 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         private val TAG: String = SettingsActivity::class.java.name
 
-        const val PREFERENCES_FILE = "prefs"
+        private const val PREFERENCES_FILE = "prefs"
         const val PREFERENCES_DARK_THEME = "dark_theme"
         const val PREFERENCES_FIREBASE_TOKEN = "token"
         const val PREFERENCES_QUIET_NOTIFICATIONS = "quiet_notifications"
@@ -32,7 +32,7 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        private fun getBooleanPreference(context: Context, pref: String) =
+        fun getBooleanPreference(context: Context, pref: String) =
                 getSharedPreferences(context).getBoolean(pref, false)
 
         fun getSharedPreferences(context: Context): SharedPreferences =

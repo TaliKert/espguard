@@ -32,4 +32,6 @@
     <string name="save">Save</string>
     <string name="sensor_new_name">New Name</string>
     <string name="delete_events">Delete Events</string>
+
+    <string name="notification_text_template">%s detected movement at %s</string>
 </resources>
