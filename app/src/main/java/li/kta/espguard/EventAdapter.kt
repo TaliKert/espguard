@@ -36,7 +36,9 @@ class EventAdapter : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
         holder.itemView.apply {
             event_id.text = event.id.toString()
-            event_time.text = event.eventTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            event_time.text = event.eventTime?.format(
+                DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd")
+            )
         }
     }
 }
