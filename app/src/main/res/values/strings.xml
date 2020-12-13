@@ -31,4 +31,5 @@
     <string name="sensor_saving_button">Saving button</string>
     <string name="save">Save</string>
     <string name="sensor_new_name">New Name</string>
+    <string name="delete_events">Delete Events</string>
 </resources>

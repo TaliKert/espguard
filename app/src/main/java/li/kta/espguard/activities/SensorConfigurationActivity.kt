@@ -18,6 +18,8 @@ class SensorConfigurationActivity : AppCompatActivity() {
     companion object {
         val TAG: String = SensorConfigurationActivity::class.java.name
         const val EXTRA_SENSOR_ID = "sensorId"
+
+        const val RESULT_DELETE_SENSOR = 201
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +39,8 @@ class SensorConfigurationActivity : AppCompatActivity() {
         switch_sensor_on.isChecked = sensor.turnedOn
         switch_sensor_on.setOnCheckedChangeListener { _, _ -> toggleOnSwitch(sensor) }
 
-        button_delete_device.setOnClickListener { deleteSensor(sensor.id) }
+        button_delete_events.setOnClickListener { deleteEvents(sensor) }
+        button_delete_device.setOnClickListener { deleteSensor(sensor) }
 
         button_sensor_name_save.setOnClickListener { saveNewName(sensor) }
     }
@@ -51,31 +54,43 @@ class SensorConfigurationActivity : AppCompatActivity() {
     private fun saveNewName(sensor: SensorEntity) {
         val newName = et_sensor_name.text.toString()
 
-        if (newName.isEmpty()) return
+        if (newName.isEmpty()) {
+            Toast.makeText(this, "Cannot rename to \"\"", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         Log.i(TAG, "Changing name of $sensor to $newName")  // TODO: NOT WORKING
         sensor.name = newName
         LocalSensorDb.getSensorDao(this).updateSensor(sensor)
+
+        Toast.makeText(this, "Renamed sensor to $newName", Toast.LENGTH_SHORT).show()
     }
 
-    private fun deleteSensor(id: Int) {
-        val sensor = LocalSensorDb.getSensorDao(applicationContext).findSensorById(id)
+    private fun deleteEvents(sensor: SensorEntity) {
+        Log.i(TAG, "Deleting events of $sensor")
+        removeEventsFromDatabase(sensor)
 
+        Toast.makeText(this, "Deleted ${sensor.name} sensor events",
+                       Toast.LENGTH_SHORT).show()
+    }
+
+    private fun removeEventsFromDatabase(sensor: SensorEntity) {
+        sensor.deviceId?.let {
+            LocalSensorDb.getEventDao(applicationContext)
+                    .let { dao -> dao.deleteEvents(*dao.findEventsByDeviceId(it)) }
+        }
+    }
+
+    private fun deleteSensor(sensor: SensorEntity) {
         Log.i(TAG, "Deleting sensor $sensor")
 
         removeEventsFromDatabase(sensor)
         removeSensorFromDatabase(sensor)
 
         Toast.makeText(this, "Deleted device", Toast.LENGTH_SHORT).show()
-        finish()
-    }
 
-    private fun removeEventsFromDatabase(sensor: SensorEntity) {
-        sensor.deviceId?.let {
-            LocalSensorDb.getEventDao(applicationContext).let { dao ->
-                dao.deleteEvents(*dao.findEventsByDeviceId(it))
-            }
-        }
+        setResult(RESULT_DELETE_SENSOR)
+        finish()
     }
 
     private fun removeSensorFromDatabase(sensor: SensorEntity) {
