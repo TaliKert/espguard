@@ -21,7 +21,8 @@
       </intent-filter>
     </service>
 
-    <activity android:name=".activities.SensorDetailsActivity" />
+    <activity android:name=".activities.SensorDetailsActivity"
+              android:parentActivityName=".activities.MainActivity" />
     <activity android:name=".activities.SettingsActivity" />
     <activity android:name=".activities.SensorConfigurationActivity" />
     <activity android:name=".activities.SensorAddingActivity" />
