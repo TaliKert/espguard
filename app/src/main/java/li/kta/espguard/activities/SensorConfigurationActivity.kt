@@ -1,12 +1,12 @@
 package li.kta.espguard.activities
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_configure_sensor.*
 import li.kta.espguard.MqttService
 import li.kta.espguard.R
@@ -25,22 +25,37 @@ class SensorConfigurationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_configure_sensor)
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
-        val id = intent.getIntExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, -1)
-        val sensor = LocalSensorDb.getSensorDao(this).findSensorById(id)
+        val sensor = LocalSensorDb.getSensorDao(this)
+                .findSensorById(intent.getIntExtra(EXTRA_SENSOR_ID, -1))
 
-        button_health_check.setOnClickListener {
-            MqttService.getInstance()?.healthCheck(sensor)
-        }
+        setupButtons(sensor)
+    }
+
+    private fun setupButtons(sensor: SensorEntity) {
+        button_health_check.setOnClickListener { MqttService.getInstance()?.healthCheck(sensor) }
 
         switch_sensor_on.isChecked = sensor.turnedOn
+        switch_sensor_on.setOnCheckedChangeListener { _, _ -> toggleOnSwitch(sensor) }
 
-        switch_sensor_on.setOnCheckedChangeListener { _, isSwitchedOn ->
-            sensor.turnedOn = isSwitchedOn
-            LocalSensorDb.getSensorDao(this).updateSensor(sensor)
-            MqttService.getInstance()?.turnOnOff(sensor)
-        }
+        button_delete_device.setOnClickListener { deleteSensor(sensor.id) }
 
-        button_delete_device.setOnClickListener { deleteSensor(id) }
+        button_sensor_name_save.setOnClickListener { saveNewName(sensor) }
+    }
+
+    private fun toggleOnSwitch(sensor: SensorEntity) {
+        sensor.turnedOn != sensor.turnedOn
+        LocalSensorDb.getSensorDao(this).updateSensor(sensor)
+        MqttService.getInstance()?.turnOnOff(sensor)
+    }
+
+    private fun saveNewName(sensor: SensorEntity) {
+        val newName = et_sensor_name.text.toString()
+
+        if (newName.isEmpty()) return
+
+        Log.i(TAG, "Changing name of $sensor to $newName")  // TODO: NOT WORKING
+        sensor.name = newName
+        LocalSensorDb.getSensorDao(this).updateSensor(sensor)
     }
 
     private fun deleteSensor(id: Int) {
@@ -57,8 +72,9 @@ class SensorConfigurationActivity : AppCompatActivity() {
 
     private fun removeEventsFromDatabase(sensor: SensorEntity) {
         sensor.deviceId?.let {
-            LocalSensorDb.getEventDao(applicationContext).deleteEvents(
-                    *LocalSensorDb.getEventDao(applicationContext).findEventsByDeviceId(it))
+            LocalSensorDb.getEventDao(applicationContext).let { dao ->
+                dao.deleteEvents(*dao.findEventsByDeviceId(it))
+            }
         }
     }
 

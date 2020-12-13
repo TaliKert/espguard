@@ -27,4 +27,8 @@
     <string name="sensor_on">Sensor ON</string>
     <string name="configure">CONFIGURE</string>
     <string name="delete_device">DELETE DEVICE</string>
+    <string name="sensor_name_name">Name</string>
+    <string name="sensor_saving_button">Saving button</string>
+    <string name="save">Save</string>
+    <string name="sensor_new_name">New Name</string>
 </resources>

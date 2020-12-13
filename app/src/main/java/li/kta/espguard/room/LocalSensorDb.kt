@@ -32,5 +32,4 @@ abstract class LocalSensorDb : RoomDatabase() {
     abstract fun getSensorDao(): SensorDao
 
     abstract fun getEventDao(): EventDao
-
 }
