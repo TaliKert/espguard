@@ -24,10 +24,13 @@ import li.kta.espguard.room.SensorEntity
  *    - Sensor deletion button to configuration activity
  *    - Sensor deletion to retreat to main view, instead of details view
  *    - Properly formatted event history: replace id, format time
- *    - Name change conf
+ *    - Sensor rename in configurations
+ *    - DB updating in configurations gets overwritten for some reason
  *    - Health check at adding new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
+ *    - Use it also for all Toasts?
+ *    - TEST STUFF (deletions, renames, lateinit nulls, settings, ...)
  *    - colors.xml and styles.xml
  *    - Dimensions in dimens.xml
  *    - The app uses threading to delegate work off UI thread: result of background work should still be notified in the UI
@@ -40,8 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sensorAdapter: SensorAdapter
     private lateinit var model: SensorViewModel
-    lateinit var healthCheckReceiver: BroadcastReceiver
-    lateinit var healthCheckRequestReceiver: BroadcastReceiver
+    private lateinit var healthCheckReceiver: BroadcastReceiver
+    private lateinit var healthCheckRequestReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -115,17 +118,17 @@ class MainActivity : AppCompatActivity() {
     private fun openSensorDetailsView(sensor: SensorEntity) {
         Log.i(TAG, "Opening details view for sensor $sensor")
         startActivity(
-            Intent(this, SensorDetailsActivity::class.java)
-                .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
+                Intent(this, SensorDetailsActivity::class.java)
+                        .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
     }
 
     private fun createAdapter() {
         sensorAdapter = SensorAdapter(
-            object : SensorAdapter.SensorAdapterListener {
-                override fun onButtonClick(sensor: SensorEntity) {
-                    openSensorDetailsView(sensor)
+                object : SensorAdapter.SensorAdapterListener {
+                    override fun onButtonClick(sensor: SensorEntity) {
+                        openSensorDetailsView(sensor)
+                    }
                 }
-            }
         )
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
