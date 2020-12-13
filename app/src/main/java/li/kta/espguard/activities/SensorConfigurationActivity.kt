@@ -34,8 +34,6 @@ class SensorConfigurationActivity : AppCompatActivity() {
     }
 
     private fun setupButtons(sensor: SensorEntity) {
-        button_health_check.setOnClickListener { MqttService.getInstance()?.healthCheck(sensor) }
-
         switch_sensor_on.isChecked = sensor.turnedOn
         switch_sensor_on.setOnCheckedChangeListener { _, _ -> toggleOnSwitch(sensor) }
 
