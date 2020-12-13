@@ -27,9 +27,9 @@ class SensorDetailsActivity : AppCompatActivity() {
     }
 
     private var id: Int = -1
-    private lateinit var model: EventViewModel
-    private lateinit var eventAdapter: EventAdapter
-    private lateinit var firebaseEventReceiver: BroadcastReceiver
+    private var model: EventViewModel? = null
+    private var eventAdapter: EventAdapter? = null
+    private var firebaseEventReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +72,7 @@ class SensorDetailsActivity : AppCompatActivity() {
         Log.i(TAG, "Setting up details for $sensor")
 
         model = ViewModelProvider(this).get(EventViewModel::class.java)
-        model.deviceId = sensor.deviceId.toString()
+        model?.deviceId = sensor.deviceId.toString()
 
         createAdapter()
 
@@ -110,15 +110,15 @@ class SensorDetailsActivity : AppCompatActivity() {
     }
 
     fun refreshData() {
-        model.refresh()
-        eventAdapter.data = model.eventsArray
+        model?.refresh()
+        model?.let { eventAdapter?.data = it.eventsArray }
     }
 
     private fun createAdapter() {
         eventAdapter = EventAdapter()
         events_recyclerview.adapter = eventAdapter
         events_recyclerview.layoutManager = LinearLayoutManager(this)
-        eventAdapter.data = model.eventsArray
+        refreshData()
     }
 
     private fun openSensorConfiguration(sensorId: Int) {
