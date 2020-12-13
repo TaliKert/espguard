@@ -55,10 +55,6 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
     }
 
     fun changeSensorStatusesPending() {
-//        for (sensor in data) {
-//            sensor.successfulHealthCheck = null
-//        }
-//        lastHealthCheckAt = LocalDateTime.now()
         notifyDataSetChanged()
     }
 }
