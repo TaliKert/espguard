@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.*
 import li.kta.espguard.MqttService.Companion.STATUS_REQUEST_ACTION
 import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
+import li.kta.espguard.activities.SensorAddingActivity.Companion.EXTRA_ADDED_SENSOR
 import li.kta.espguard.activities.SensorAddingActivity.Companion.RESULT_ADDED_SENSOR
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.room.SensorEntity
@@ -22,15 +23,11 @@ import li.kta.espguard.room.SensorEntity
 /** TODO
  *    - HEALTH CHECK BUTTON user feedback?
  *    - ON/OFF display for sensors
- *    - Sensor deletion button to configuration activity
- *    - Sensor deletion to retreat to main view, instead of details view
- *    - Properly formatted event history: replace id, format time
- *    - Sensor rename in configurations
  *    - DB updating in configurations gets overwritten for some reason
- *    - Health check at adding new device
+ *    - Health check when adding a new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
- *    - Use it also for all Toasts?
+ *    - Use string resources also for all Toasts?
  *    - TEST STUFF (deletions, renames, lateinit nulls, settings, ...)
  *    - colors.xml and styles.xml
  *    - Dimensions in dimens.xml
@@ -121,27 +118,23 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode != REQUEST_CODE_ADD_SENSOR) return
+        if (requestCode != REQUEST_CODE_ADD_SENSOR || resultCode != RESULT_ADDED_SENSOR) return
 
-        if (resultCode == RESULT_ADDED_SENSOR) {
-            refreshData()
-            MqttService.getInstance()?.apply {
-                if (data != null) {
-                    val sensor: SensorEntity? =
-                        data.getParcelableExtra<SensorEntity>("addedSensor")
-                    if (sensor != null) {
-                        subscribe(sensor)
-                        healthCheck(sensor)
-                    }
-                }
-            }
+        refreshData()
+        MqttService.getInstance()?.let { mqtt ->
+            if (data == null) return
+
+            val sensor: SensorEntity = data.getParcelableExtra(EXTRA_ADDED_SENSOR) ?: return
+
+            mqtt.subscribe(sensor)
+            mqtt.healthCheck(sensor)
         }
     }
 
     private fun openNewSensorView() {
         startActivityForResult(
-            Intent(this, SensorAddingActivity::class.java),
-            REQUEST_CODE_ADD_SENSOR
+                Intent(this, SensorAddingActivity::class.java),
+                REQUEST_CODE_ADD_SENSOR
         )
     }
 

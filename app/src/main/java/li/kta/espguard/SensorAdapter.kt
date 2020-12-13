@@ -45,10 +45,10 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
             tv_sensor_name.text = sensor.name.toString()
             tv_sensor_id.text = sensor.deviceId.toString()
 
-            val status = sensor.getStatus()
-
-            status_svg.setImageResource(status.iconResource)
-            tv_sensor_status.setText(status.textResource)
+            sensor.getStatus().let {
+                status_svg.setImageResource(it.iconResource)
+                tv_sensor_status.setText(it.textResource)
+            }
 
             setOnClickListener { listener.onButtonClick(sensor) }
         }

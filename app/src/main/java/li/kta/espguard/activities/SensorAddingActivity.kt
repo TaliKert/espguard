@@ -18,6 +18,8 @@ class SensorAddingActivity : AppCompatActivity() {
     companion object {
         val TAG: String = SensorAddingActivity::class.java.name
         const val RESULT_ADDED_SENSOR = 201
+
+        const val EXTRA_ADDED_SENSOR = "added_sensor"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +55,7 @@ class SensorAddingActivity : AppCompatActivity() {
 
         LocalSensorDb.getSensorDao(this).insertSensors(sensor)
         Toast.makeText(this, "Added sensor ${sensor.name}", Toast.LENGTH_SHORT).show()
-        setResult(RESULT_ADDED_SENSOR, Intent().putExtra("addedSensor", sensor))
+        setResult(RESULT_ADDED_SENSOR, Intent().putExtra(EXTRA_ADDED_SENSOR, sensor))
 
         finish()
     }

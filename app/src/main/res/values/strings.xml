@@ -34,4 +34,6 @@
     <string name="delete_events">Delete Events</string>
 
     <string name="notification_text_template">%s detected movement at %s</string>
+    <string name="notification_title">Movement Alert</string>
+    <string name="settings">Settings</string>
 </resources>
