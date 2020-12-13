@@ -1,6 +1,7 @@
 package li.kta.espguard.activities
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -27,15 +28,15 @@ class SettingsActivity : AppCompatActivity() {
             Log.i(TAG, "Setting theme of $context to dark: $useDarkTheme")
 
             AppCompatDelegate.setDefaultNightMode(
-                if (useDarkTheme) MODE_NIGHT_YES else MODE_NIGHT_NO
+                    if (useDarkTheme) MODE_NIGHT_YES else MODE_NIGHT_NO
             )
         }
 
         private fun getBooleanPreference(context: Context, pref: String) =
-            getSharedPreferences(context).getBoolean(pref, false)
+                getSharedPreferences(context).getBoolean(pref, false)
 
-        private fun getSharedPreferences(context: Context) =
-            context.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
+        fun getSharedPreferences(context: Context): SharedPreferences =
+                context.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,26 +51,24 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         listOf(
-            button_switch_theme to ::toggleThemeSwitch,
-            switch_ignore_notifications to ::toggleIgnoreSwitch,
-            switch_quiet_notifications to ::toggleQuietSwitch,
-            button_clear_events to ::clearEvents
+                button_switch_theme to ::toggleThemeSwitch,
+                switch_ignore_notifications to ::toggleIgnoreSwitch,
+                switch_quiet_notifications to ::toggleQuietSwitch,
+                button_clear_events to ::clearEvents
         ).forEach { (button, action) -> button.setOnClickListener { action() } }
     }
 
     private fun loadSwitchValues() {
         switch_quiet_notifications.isChecked = getBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
         switch_ignore_notifications.isChecked =
-            getBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
+                getBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
     }
 
     private fun toggleQuietSwitch() = invertBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
 
     private fun toggleIgnoreSwitch() = invertBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
 
-    private fun clearEvents() {
-        LocalSensorDb.getEventDao(this).nukeTable()
-    }
+    private fun clearEvents(): Unit = LocalSensorDb.getEventDao(this).nukeTable()
 
 
     private fun toggleThemeSwitch() {
@@ -78,10 +77,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun invertBooleanPreference(pref: String): Unit =
-        getSharedPreferencesEditor().let {
-            it.putBoolean(pref, !getBooleanPreference(pref))
-            it.apply()
-        }
+            getSharedPreferencesEditor().let {
+                it.putBoolean(pref, !getBooleanPreference(pref))
+                it.apply()
+            }
 
     private fun getBooleanPreference(pref: String) = getBooleanPreference(this, pref)
 

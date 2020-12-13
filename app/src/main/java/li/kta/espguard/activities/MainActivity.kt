@@ -41,10 +41,10 @@ class MainActivity : AppCompatActivity() {
         val TAG: String = MainActivity::class.java.name
     }
 
-    private lateinit var sensorAdapter: SensorAdapter
-    private lateinit var model: SensorViewModel
-    private lateinit var healthCheckReceiver: BroadcastReceiver
-    private lateinit var healthCheckRequestReceiver: BroadcastReceiver
+    private var sensorAdapter: SensorAdapter? = null
+    private var model: SensorViewModel? = null
+    private var healthCheckReceiver: BroadcastReceiver? = null
+    private var healthCheckRequestReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         model = ViewModelProvider(this).get(SensorViewModel::class.java)
         createAdapter()
 
-        MqttService.initializeMqttService(this, model.sensorArray)
+        model?.let { MqttService.initializeMqttService(this, it.sensorArray) }
 
         setupHealthCheckReceiver()
 
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         healthCheckRequestReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                sensorAdapter.changeSensorStatusesPending()
+                sensorAdapter?.changeSensorStatusesPending()
             }
         }
         registerReceiver(healthCheckRequestReceiver, IntentFilter(STATUS_REQUEST_ACTION))
@@ -87,14 +87,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun refreshData() {
-        model.refresh()
-        sensorAdapter.data = model.sensorArray
+        model?.let {
+            it.refresh()
+            sensorAdapter?.data = it.sensorArray
+        }
     }
 
     override fun onDestroy() {
         MqttService.destroyMqttService()
-        unregisterReceiver(healthCheckReceiver)
-        unregisterReceiver(healthCheckRequestReceiver)
+
+        listOfNotNull(healthCheckReceiver, healthCheckRequestReceiver).map(::unregisterReceiver)
+
         super.onDestroy()
     }
 
@@ -108,6 +111,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
             return true
         }
+
         return super.onOptionsItemSelected(item)
     }
 
@@ -117,9 +121,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun openSensorDetailsView(sensor: SensorEntity) {
         Log.i(TAG, "Opening details view for sensor $sensor")
-        startActivity(
-                Intent(this, SensorDetailsActivity::class.java)
-                        .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
+        startActivity(Intent(this, SensorDetailsActivity::class.java)
+                              .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) })
     }
 
     private fun createAdapter() {
@@ -130,8 +133,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
         )
+
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)
-        sensorAdapter.data = model.sensorArray
+        refreshData()
     }
 }
