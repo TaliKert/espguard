@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import li.kta.espguard.*
 import li.kta.espguard.MqttService.Companion.STATUS_REQUEST_ACTION
 import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
+import li.kta.espguard.activities.SensorAddingActivity.Companion.RESULT_ADDED_SENSOR
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.room.SensorEntity
 
@@ -39,6 +40,7 @@ import li.kta.espguard.room.SensorEntity
 class MainActivity : AppCompatActivity() {
     companion object {
         val TAG: String = MainActivity::class.java.name
+        const val REQUEST_CODE_ADD_SENSOR = 1302
     }
 
     private var sensorAdapter: SensorAdapter? = null
@@ -116,8 +118,22 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode != REQUEST_CODE_ADD_SENSOR) return
+
+        if (resultCode == RESULT_ADDED_SENSOR) {
+            refreshData()
+            MqttService.getInstance()?.healthCheckAllSensors()
+        }
+    }
+
     private fun openNewSensorView() {
-        startActivity(Intent(this, SensorAddingActivity::class.java))
+        startActivityForResult(
+            Intent(this, SensorAddingActivity::class.java),
+            REQUEST_CODE_ADD_SENSOR
+        )
     }
 
     private fun openSensorDetailsView(sensor: SensorEntity) {
