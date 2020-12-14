@@ -1,9 +1,10 @@
 package li.kta.espguard.room
 
 import android.content.Context
-import androidx.room.*
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(entities = [SensorEntity::class, EventEntity::class], version = 6, exportSchema = false)
 @TypeConverters(ZDTConverter::class)

@@ -6,12 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
-
 import li.kta.espguard.room.SensorEntity
-import java.time.ZonedDateTime
 
-class SensorAdapter(private var listener: SensorAdapterListener) :
-        RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
+class SensorAdapter(private var listener: SensorAdapterListener)
+    : RecyclerView.Adapter<SensorAdapter.SensorViewHolder>() {
 
     companion object {
         val TAG: String = SensorAdapter::class.java.name
@@ -41,21 +39,19 @@ class SensorAdapter(private var listener: SensorAdapterListener) :
 
         Log.i(TAG, "Binding sensor $position : $sensor")
 
-        holder.itemView.apply {
-            tv_sensor_name.text = sensor.name.toString()
-            tv_sensor_id.text = sensor.deviceId.toString()
+        holder.itemView.let { view ->
+            view.tv_sensor_name.text = sensor.name.toString()
+            view.tv_sensor_id.text = sensor.deviceId.toString()
 
             sensor.getStatus().let {
-                status_svg.setImageResource(it.iconResource)
-                tv_sensor_status.setText(it.textResource)
+                view.status_svg.setImageResource(it.iconResource)
+                view.tv_sensor_status.setText(it.textResource)
             }
 
-            setOnClickListener { listener.onButtonClick(sensor) }
+            view.setOnClickListener { listener.onButtonClick(sensor) }
         }
     }
 
-    fun changeSensorStatusesPending() {
-        notifyDataSetChanged()
-    }
+    fun changeSensorStatusesPending(): Unit = notifyDataSetChanged()
 }
 

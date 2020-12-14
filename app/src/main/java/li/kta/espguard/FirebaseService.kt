@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
-import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
 import android.os.Build
@@ -34,6 +33,13 @@ class FirebaseService : FirebaseMessagingService() {
         const val STATUS_RESPONSE_ACTION = "firebase movement event"
 
         const val NOTIFICATIONS_CHANNEL_ID = "default"
+
+        const val DATA_DEVICE_ID = "deviceId"
+        const val DATA_TIMESTAMP = "timestamp"
+
+
+        fun formattedDate(eventTime: ZonedDateTime): String =
+                eventTime.format(DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))
     }
 
     /**
@@ -49,31 +55,24 @@ class FirebaseService : FirebaseMessagingService() {
     }
 
     private fun saveTokenToPreferences(token: String): Unit =
-            getSharedPreferences(this).edit().let { editor ->
-                editor.putString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, token)
-                editor.apply()
+            getSharedPreferences(this).edit().let {
+                it.putString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, token)
+                it.apply()
             }
 
 
     override fun onMessageReceived(message: RemoteMessage): Unit = onMessageReceived(message.data)
 
     private fun onMessageReceived(data: Map<String, String>) {
-        data["deviceId"]?.let { onMessageReceived(data, it) }
-    }
+        val deviceId = data[DATA_DEVICE_ID] ?: return
 
-    private fun onMessageReceived(data: Map<String, String>, deviceId: String) {
         val sensor = LocalSensorDb.getSensorDao(this).findSensorByDeviceId(deviceId) ?: return
-
-        val event = EventEntity(deviceId = deviceId, eventTime = getEventTime(data["timestamp"]))
+        val event = EventEntity(deviceId = deviceId, eventTime = getEventTime(data[DATA_TIMESTAMP]))
 
         LocalSensorDb.getEventDao(this).insertEvents(event)
 
         // 'Esik' detected movement at 02:07 on Saturday, Dec 12
-        if (!ignoreNotifications())
-            sendNotification(resources.getString(R.string.notification_text_template,
-                                                 sensor.name,
-                                                 event.eventTime?.let { formattedDate(it) }),
-              sensor)
+        if (!ignoreNotifications()) sendNotification(sensor, event)
 
         sendBroadcast(Intent(STATUS_RESPONSE_ACTION))
 
@@ -81,52 +80,54 @@ class FirebaseService : FirebaseMessagingService() {
         Log.i(TAG, data.toString())
     }
 
-    private fun getEventTime(timestamp: String?) = ZonedDateTime.ofInstant(
+    private fun getEventTime(timestamp: String?): ZonedDateTime = ZonedDateTime.ofInstant(
             timestamp?.toLong()?.let { Instant.ofEpochSecond(it) },
             TimeZone.getDefault().toZoneId()
     )
 
-    private fun formattedDate(eventTime: ZonedDateTime): String =
-            eventTime.format(DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))
-
-
     private fun ignoreNotifications(): Boolean =
             getBooleanPreference(this, PREFERENCES_IGNORE_NOTIFICATIONS)
 
-    private fun sendNotification(message: String, sensor: SensorEntity) {
-        val notificationBuilder = buildNotification(message, sensor)
+    private fun sendNotification(sensor: SensorEntity, event: EventEntity) {
+        val notificationBuilder = buildNotification(sensor, event)
 
         putNotificationsOnQuiet(notificationBuilder)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             notificationManager.createNotificationChannel(
                     NotificationChannel(NOTIFICATIONS_CHANNEL_ID,
-                                        "Channel human readable title",
+                                        "Channel human readable title", // TODO - solve magic string...
                                         NotificationManager.IMPORTANCE_DEFAULT))
 
         notificationManager.notify(0 /* auto-generated */, notificationBuilder.build())
     }
 
-    private fun buildNotification(message: String, sensor: SensorEntity): NotificationCompat.Builder {
-        val intent = Intent(this, SensorDetailsActivity::class.java)
-          .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) }
 
-        val pendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
-          addNextIntentWithParentStack(intent)
-          getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
+    private fun buildNotification(sensor: SensorEntity, event: EventEntity): NotificationCompat.Builder =
+            NotificationCompat.Builder(this, NOTIFICATIONS_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_baseline_eye_24)
+                    .setContentTitle(getString(R.string.notification_title))
+                    .setContentText(getNotificationMessage(sensor, event))
+                    .setAutoCancel(true)
+                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                    .setContentIntent(getNotificationPendingIntent(sensor))
 
-        return NotificationCompat.Builder(this, NOTIFICATIONS_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_baseline_eye_24)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setContentIntent(pendingIntent)
-    }
+    private fun getNotificationMessage(sensor: SensorEntity, event: EventEntity): String =
+            resources.getString(R.string.notification_text_template,
+                                sensor.name, event.eventTime?.let { formattedDate(it) })
+
+    private fun getNotificationPendingIntent(sensor: SensorEntity): PendingIntent? =
+            TaskStackBuilder.create(this).run {
+                addNextIntentWithParentStack(getNotificationIntent(sensor))
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+            }
+
+    private fun getNotificationIntent(sensor: SensorEntity): Intent =
+            Intent(this, SensorDetailsActivity::class.java)
+                    .apply { putExtra(SensorDetailsActivity.EXTRA_SENSOR_ID, sensor.id) }
 
     private fun putNotificationsOnQuiet(notificationBuilder: NotificationCompat.Builder) {
         if (getBooleanPreference(this, PREFERENCES_QUIET_NOTIFICATIONS))
