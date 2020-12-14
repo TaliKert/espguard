@@ -1,7 +1,6 @@
 package li.kta.espguard.activities
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +9,8 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import kotlinx.android.synthetic.main.activity_settings.*
 import li.kta.espguard.R
+import li.kta.espguard.helpers.SharedPreferencesHelper.getBooleanPreference
+import li.kta.espguard.helpers.SharedPreferencesHelper.getSharedPreferencesEditor
 import li.kta.espguard.room.LocalSensorDb
 
 
@@ -18,7 +19,6 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         private val TAG: String = SettingsActivity::class.java.name
 
-        private const val PREFERENCES_FILE = "prefs"
         const val PREFERENCES_DARK_THEME = "dark_theme"
         const val PREFERENCES_FIREBASE_TOKEN = "token"
         const val PREFERENCES_QUIET_NOTIFICATIONS = "quiet_notifications"
@@ -32,15 +32,6 @@ class SettingsActivity : AppCompatActivity() {
                     if (useDarkTheme) MODE_NIGHT_YES else MODE_NIGHT_NO
             )
         }
-
-        fun getBooleanPreference(context: Context, pref: String): Boolean =
-                getSharedPreferences(context).getBoolean(pref, false)
-
-        fun getSharedPreferencesEditor(context: Context): SharedPreferences.Editor =
-                getSharedPreferences(context).edit()
-
-        fun getSharedPreferences(context: Context): SharedPreferences =
-                context.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
     }
 
 

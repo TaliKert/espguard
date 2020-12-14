@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.services
 
 import android.content.Context
 import android.content.Intent
@@ -7,7 +7,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.*
 import li.kta.espguard.activities.SettingsActivity.Companion.PREFERENCES_FIREBASE_TOKEN
-import li.kta.espguard.activities.SettingsActivity.Companion.getSharedPreferences
+import li.kta.espguard.helpers.SharedPreferencesHelper.getSharedPreferences
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 import org.eclipse.paho.android.service.MqttAndroidClient
@@ -55,10 +55,11 @@ class MqttService(private val context: Context, var sensors: Array<SensorEntity>
         private var mqttService: MqttService? = null
 
         fun initializeMqttService(context: Context, sensors: Array<SensorEntity>) {
-            mqttService = MqttService(context, sensors).apply {
-                initialize()
-                initializePeriodicHealthCheck()
-            }
+            mqttService = MqttService(context, sensors)
+                    .apply {
+                        initialize()
+                        initializePeriodicHealthCheck()
+                    }
 
             Log.i(TAG, "MqttService initialized")
         }
@@ -167,7 +168,7 @@ class MqttService(private val context: Context, var sensors: Array<SensorEntity>
         LocalSensorDb.getSensorDao(context).findSensorByDeviceId(deviceId)?.let { sensor ->
             val json = Gson().fromJson(message.toString(), JsonObject::class.java)
 
-            sensor.turnedOn = json.get("active").asBoolean // TODO - magic string
+            sensor.turnedOn = json.get("active").asBoolean
             sensor.successfulHealthCheck = ZonedDateTime.now()
 
             LocalSensorDb.getSensorDao(context).updateSensor(sensor)

@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.services
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -11,12 +11,13 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import li.kta.espguard.R
 import li.kta.espguard.activities.SensorDetailsActivity
 import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.activities.SettingsActivity.Companion.PREFERENCES_IGNORE_NOTIFICATIONS
 import li.kta.espguard.activities.SettingsActivity.Companion.PREFERENCES_QUIET_NOTIFICATIONS
-import li.kta.espguard.activities.SettingsActivity.Companion.getBooleanPreference
-import li.kta.espguard.activities.SettingsActivity.Companion.getSharedPreferencesEditor
+import li.kta.espguard.helpers.SharedPreferencesHelper.getBooleanPreference
+import li.kta.espguard.helpers.SharedPreferencesHelper.getSharedPreferencesEditor
 import li.kta.espguard.room.EventEntity
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
