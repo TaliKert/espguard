@@ -49,14 +49,12 @@ class SettingsActivity : AppCompatActivity() {
         setupButtons()
     }
 
-    private fun setupButtons() {
-        listOf(
-                button_switch_theme to ::toggleThemeSwitch,
-                switch_ignore_notifications to ::toggleIgnoreSwitch,
-                switch_quiet_notifications to ::toggleQuietSwitch,
-                button_clear_events to ::clearEvents
-        ).forEach { (button, action) -> button.setOnClickListener { action() } }
-    }
+    private fun setupButtons(): Unit = listOf(
+            button_switch_theme to ::toggleThemeSwitch,
+            switch_ignore_notifications to ::toggleIgnoreSwitch,
+            switch_quiet_notifications to ::toggleQuietSwitch,
+            button_clear_events to ::clearEvents
+    ).forEach { (button, action) -> button.setOnClickListener { action() } }
 
     private fun loadSwitchValues() {
         switch_quiet_notifications.isChecked = getBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
@@ -76,11 +74,10 @@ class SettingsActivity : AppCompatActivity() {
         recreate()
     }
 
-    private fun invertBooleanPreference(pref: String): Unit =
-            getSharedPreferencesEditor().let {
-                it.putBoolean(pref, !getBooleanPreference(pref))
-                it.apply()
-            }
+    private fun invertBooleanPreference(pref: String): Unit = getSharedPreferencesEditor().let {
+        it.putBoolean(pref, !getBooleanPreference(pref))
+        it.apply()
+    }
 
     private fun getBooleanPreference(pref: String) = getBooleanPreference(this, pref)
 

@@ -19,7 +19,7 @@ data class SensorEntity(
         var successfulHealthCheck: ZonedDateTime? = null
 ) : Parcelable {
 
-  enum class Status(val iconResource: Int, val textResource: Int) {
+    enum class Status(val iconResource: Int, val textResource: Int) {
         FAILED(R.drawable.ic_failed_24, R.string.sensor_status_failed),
         PENDING(R.drawable.ic_pending_24, R.string.sensor_status_pending),
         HEALTHY(R.drawable.ic_healthy_24, R.string.sensor_status_healthy),

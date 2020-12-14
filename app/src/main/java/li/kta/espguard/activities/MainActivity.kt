@@ -23,7 +23,6 @@ import li.kta.espguard.room.SensorEntity
 /** TODO
  *    - HEALTH CHECK BUTTON user feedback?
  *    - ON/OFF display for sensors
- *    - DB updating in configurations gets overwritten for some reason
  *    - Health check when adding a new device
  *    - Toolbar color with theme change
  *    - Use resource files: text values in strings.xml
@@ -122,21 +121,16 @@ class MainActivity : AppCompatActivity() {
 
         refreshData()
         MqttService.getInstance()?.let { mqtt ->
-            if (data == null) return
-
-            val sensor: SensorEntity = data.getParcelableExtra(EXTRA_ADDED_SENSOR) ?: return
+            val sensor: SensorEntity = data?.getParcelableExtra(EXTRA_ADDED_SENSOR) ?: return
 
             mqtt.subscribe(sensor)
             mqtt.healthCheck(sensor)
         }
     }
 
-    private fun openNewSensorView() {
-        startActivityForResult(
-                Intent(this, SensorAddingActivity::class.java),
-                REQUEST_CODE_ADD_SENSOR
-        )
-    }
+    private fun openNewSensorView(): Unit =
+            startActivityForResult(Intent(this, SensorAddingActivity::class.java),
+                                   REQUEST_CODE_ADD_SENSOR)
 
     private fun openSensorDetailsView(sensor: SensorEntity) {
         Log.i(TAG, "Opening details view for sensor $sensor")
@@ -145,13 +139,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createAdapter() {
-        sensorAdapter = SensorAdapter(
-                object : SensorAdapter.SensorAdapterListener {
-                    override fun onButtonClick(sensor: SensorEntity) {
-                        openSensorDetailsView(sensor)
-                    }
-                }
-        )
+        sensorAdapter = SensorAdapter(object : SensorAdapter.SensorAdapterListener {
+            override fun onButtonClick(sensor: SensorEntity): Unit = openSensorDetailsView(sensor)
+        })
 
         sensors_recyclerview.adapter = sensorAdapter
         sensors_recyclerview.layoutManager = LinearLayoutManager(this)

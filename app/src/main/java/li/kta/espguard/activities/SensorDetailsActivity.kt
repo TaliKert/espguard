@@ -88,7 +88,6 @@ class SensorDetailsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
         refreshData()
     }
 

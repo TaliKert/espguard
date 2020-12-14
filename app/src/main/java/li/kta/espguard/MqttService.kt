@@ -140,21 +140,28 @@ class MqttService(private val context: Context, var sensors: Array<SensorEntity>
     override fun messageArrived(topic: String?, message: MqttMessage?) {
         Log.i(TAG, "MQTT Message: \"${message.toString()}\" (topic=\"${topic}\")")
 
-        if (topic == null) return
-
-        val deviceId = topic.split("/").last()
-        val sensor = LocalSensorDb.getSensorDao(context).findSensorByDeviceId(deviceId) ?: return
-
-        val json = Gson().fromJson(message.toString(), JsonObject::class.java)
-        sensor.turnedOn = json.get("active").asBoolean
-        sensor.successfulHealthCheck = ZonedDateTime.now()
-        LocalSensorDb.getSensorDao(context).updateSensor(sensor)
-
-        context.sendBroadcast(Intent(STATUS_RESPONSE_ACTION).apply {
-            putExtra("deviceId", deviceId)
-            putExtra("message", message.toString())
-        })
+        topic?.split("/")?.last()?.let { deviceId ->
+            updateSensor(deviceId, message)
+            sendMessageBroadcast(deviceId, message)
+        }
     }
+
+    private fun updateSensor(deviceId: String, message: MqttMessage?) {
+        LocalSensorDb.getSensorDao(context).findSensorByDeviceId(deviceId)?.let { sensor ->
+            val json = Gson().fromJson(message.toString(), JsonObject::class.java)
+
+            sensor.turnedOn = json.get("active").asBoolean // TODO - magic string
+            sensor.successfulHealthCheck = ZonedDateTime.now()
+
+            LocalSensorDb.getSensorDao(context).updateSensor(sensor)
+        }
+    }
+
+    private fun sendMessageBroadcast(deviceId: String, message: MqttMessage?): Unit =
+            context.sendBroadcast(Intent(STATUS_RESPONSE_ACTION).apply {
+                putExtra("deviceId", deviceId) // TODO - magic extra name to const
+                putExtra("message", message.toString()) // TODO - magic extra name to const
+            })
 
     override fun connectionLost(cause: Throwable?) {
         Log.i(TAG, "MQTT Connection Lost!")

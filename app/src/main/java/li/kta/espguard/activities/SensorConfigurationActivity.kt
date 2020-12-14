@@ -90,9 +90,8 @@ class SensorConfigurationActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun removeSensorFromDatabase(sensor: SensorEntity) {
-        LocalSensorDb.getSensorDao(applicationContext).deleteSensor(sensor)
-    }
+    private fun removeSensorFromDatabase(sensor: SensorEntity): Unit =
+            LocalSensorDb.getSensorDao(applicationContext).deleteSensor(sensor)
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
