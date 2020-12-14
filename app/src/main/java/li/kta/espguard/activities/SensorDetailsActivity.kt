@@ -12,11 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_sensor_details.*
-import li.kta.espguard.FirebaseService
 import li.kta.espguard.R
 import li.kta.espguard.adapters.EventAdapter
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
+import li.kta.espguard.services.FirebaseService
 import li.kta.espguard.viewModels.EventViewModel
 
 class SensorDetailsActivity : AppCompatActivity() {

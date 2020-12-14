@@ -12,30 +12,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
-import li.kta.espguard.MqttService
-import li.kta.espguard.MqttService.Companion.STATUS_REQUEST_ACTION
-import li.kta.espguard.MqttService.Companion.STATUS_RESPONSE_ACTION
 import li.kta.espguard.R
 import li.kta.espguard.activities.SensorAddingActivity.Companion.EXTRA_ADDED_SENSOR
 import li.kta.espguard.activities.SensorAddingActivity.Companion.RESULT_ADDED_SENSOR
 import li.kta.espguard.activities.SettingsActivity.Companion.setTheme
 import li.kta.espguard.adapters.SensorAdapter
 import li.kta.espguard.room.SensorEntity
+import li.kta.espguard.services.MqttService
+import li.kta.espguard.services.MqttService.Companion.STATUS_REQUEST_ACTION
+import li.kta.espguard.services.MqttService.Companion.STATUS_RESPONSE_ACTION
 import li.kta.espguard.viewModels.SensorViewModel
 
 /** TODO
- *    - Application ICON
- *    - HEALTH CHECK BUTTON user feedback?
- *    - ON/OFF display for sensors
- *    - Health check when adding a new device
- *    - Toolbar color with theme change
+ *    - FINAL TEST STUFF (deletions, renames, lateinit nulls, settings, ...)
+ *    - limit selection of characters for Names and IDs
  *    - Use resource files: text values in strings.xml
- *    - Use string resources also for all Toasts?
- *    - TEST STUFF (deletions, renames, lateinit nulls, settings, ...)
  *    - colors.xml and styles.xml
- *    - Dimensions in dimens.xml
- *    - The app uses threading to delegate work off UI thread: result of background work should still be notified in the UI
- *    - Actually test deleting data in app settings
  */
 class MainActivity : AppCompatActivity() {
 
