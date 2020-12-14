@@ -6,10 +6,10 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_add_sensor.*
 import li.kta.espguard.R
+import li.kta.espguard.helpers.ToastHelper.toast
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
 
@@ -48,7 +48,7 @@ class SensorAddingActivity : AppCompatActivity() {
         val sensor = getUserEnteredSensor()
 
         if (sensor == null)
-            Toast.makeText(this, "Some fields are empty", Toast.LENGTH_SHORT).show()
+            toast(this, R.string.toast_sensor_adding_fail)
         else
             addSensorToDb(sensor)
     }
@@ -62,7 +62,7 @@ class SensorAddingActivity : AppCompatActivity() {
         Log.i(TAG, "Adding sensor $sensor")
 
         LocalSensorDb.getSensorDao(applicationContext).insertSensors(sensor)
-        Toast.makeText(this, "Added sensor ${sensor.name}", Toast.LENGTH_SHORT).show()
+        toast(this, R.string.toast_added_sensor_to_db, sensor.name ?: "")
 
         setResult(RESULT_ADDED_SENSOR, Intent().putExtra(EXTRA_ADDED_SENSOR, sensor))
         finish()

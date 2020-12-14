@@ -5,13 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_configure_sensor.*
-import li.kta.espguard.MqttService
 import li.kta.espguard.R
+import li.kta.espguard.helpers.ToastHelper.toast
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
+import li.kta.espguard.services.MqttService
 
 class SensorConfigurationActivity : AppCompatActivity() {
 
@@ -64,22 +64,21 @@ class SensorConfigurationActivity : AppCompatActivity() {
         val newName = et_sensor_name.text.toString()
 
         if (newName.isEmpty()) {
-            Toast.makeText(this, "New name cannot be empty", Toast.LENGTH_SHORT).show()
+            toast(this, R.string.toast_sensor_rename_fail)
             return
         }
 
         Log.i(TAG, "Changing name of $sensor to $newName")
         LocalSensorDb.getSensorDao(applicationContext).updateSensorName(newName, sensor.id)
 
-        Toast.makeText(this, "Renamed sensor to $newName", Toast.LENGTH_SHORT).show()
+        toast(this, R.string.toast_rename_to, newName)
     }
 
     private fun deleteEvents(sensor: SensorEntity) {
         Log.i(TAG, "Deleting events of $sensor")
         removeEventsFromDatabase(sensor)
 
-        Toast.makeText(this, "Deleted ${sensor.name} sensor events",
-                       Toast.LENGTH_SHORT).show()
+        toast(this, R.string.toast_delete_sensor_events, sensor.name ?: "")
     }
 
     private fun removeEventsFromDatabase(sensor: SensorEntity) {
@@ -95,12 +94,11 @@ class SensorConfigurationActivity : AppCompatActivity() {
         removeEventsFromDatabase(sensor)
         removeSensorFromDatabase(sensor)
 
-        Toast.makeText(this, "Deleted device", Toast.LENGTH_SHORT).show()
+        toast(this, R.string.toast_device_deleted)
 
         setResult(RESULT_DELETE_SENSOR)
         finish()
     }
-
 
     private fun getExtraSensorId(): Int = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
 
