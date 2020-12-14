@@ -15,7 +15,9 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.Espguard">
 
-        <service android:name=".FirebaseService">
+        <service
+                android:name=".services.FirebaseService"
+                android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -33,7 +35,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Mqtt Service -->
+        </activity>
+
         <service android:name="org.eclipse.paho.android.service.MqttService" />
     </application>
 
