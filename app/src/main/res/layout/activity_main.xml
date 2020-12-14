@@ -41,7 +41,7 @@
             android:contentDescription="@string/add_sensor"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:maxImageSize="32dp"
+            app:maxImageSize="40dp"
             app:srcCompat="@drawable/ic_baseline_add_64" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
