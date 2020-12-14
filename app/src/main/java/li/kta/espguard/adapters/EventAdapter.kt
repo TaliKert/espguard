@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.adapters
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.event_list_item.view.*
+import li.kta.espguard.FirebaseService
+import li.kta.espguard.R
 import li.kta.espguard.room.EventEntity
 
 class EventAdapter : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
@@ -13,6 +15,7 @@ class EventAdapter : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
     companion object {
         val TAG: String = EventAdapter::class.java.name
     }
+
 
     var data: Array<EventEntity> = arrayOf()
         set(value) {
@@ -38,5 +41,6 @@ class EventAdapter : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
             event_time.text = event.eventTime?.let { FirebaseService.formattedDate(it) }
         }
     }
+
 }
 

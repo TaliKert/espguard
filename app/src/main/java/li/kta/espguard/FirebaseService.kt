@@ -16,7 +16,7 @@ import li.kta.espguard.activities.SettingsActivity
 import li.kta.espguard.activities.SettingsActivity.Companion.PREFERENCES_IGNORE_NOTIFICATIONS
 import li.kta.espguard.activities.SettingsActivity.Companion.PREFERENCES_QUIET_NOTIFICATIONS
 import li.kta.espguard.activities.SettingsActivity.Companion.getBooleanPreference
-import li.kta.espguard.activities.SettingsActivity.Companion.getSharedPreferences
+import li.kta.espguard.activities.SettingsActivity.Companion.getSharedPreferencesEditor
 import li.kta.espguard.room.EventEntity
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
@@ -33,6 +33,7 @@ class FirebaseService : FirebaseMessagingService() {
         const val STATUS_RESPONSE_ACTION = "firebase movement event"
 
         const val NOTIFICATIONS_CHANNEL_ID = "default"
+        const val NOTIFICATIONS_CHANNEL_NAME: String = "Channel human readable title"
 
         const val DATA_DEVICE_ID = "deviceId"
         const val DATA_TIMESTAMP = "timestamp"
@@ -41,6 +42,7 @@ class FirebaseService : FirebaseMessagingService() {
         fun formattedDate(eventTime: ZonedDateTime): String =
                 eventTime.format(DateTimeFormatter.ofPattern("HH:mm 'on' EEEE, MMM dd"))
     }
+
 
     /**
      * Called if the FCM registration token is updated. This may occur if the security of
@@ -54,22 +56,25 @@ class FirebaseService : FirebaseMessagingService() {
         MqttService.getInstance()?.healthCheckAllSensors()
     }
 
+    override fun onMessageReceived(message: RemoteMessage): Unit = onMessageReceived(message.data)
+
+
     private fun saveTokenToPreferences(token: String): Unit =
-            getSharedPreferences(this).edit().let {
+            getSharedPreferencesEditor(this).let {
                 it.putString(SettingsActivity.PREFERENCES_FIREBASE_TOKEN, token)
                 it.apply()
             }
 
 
-    override fun onMessageReceived(message: RemoteMessage): Unit = onMessageReceived(message.data)
-
     private fun onMessageReceived(data: Map<String, String>) {
         val deviceId = data[DATA_DEVICE_ID] ?: return
 
-        val sensor = LocalSensorDb.getSensorDao(this).findSensorByDeviceId(deviceId) ?: return
+        val sensor = LocalSensorDb.getSensorDao(applicationContext).findSensorByDeviceId(deviceId)
+                ?: return
+
         val event = EventEntity(deviceId = deviceId, eventTime = getEventTime(data[DATA_TIMESTAMP]))
 
-        LocalSensorDb.getEventDao(this).insertEvents(event)
+        LocalSensorDb.getEventDao(applicationContext).insertEvents(event)
 
         // 'Esik' detected movement at 02:07 on Saturday, Dec 12
         if (!ignoreNotifications()) sendNotification(sensor, event)
@@ -99,12 +104,11 @@ class FirebaseService : FirebaseMessagingService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             notificationManager.createNotificationChannel(
                     NotificationChannel(NOTIFICATIONS_CHANNEL_ID,
-                                        "Channel human readable title", // TODO - solve magic string...
+                                        NOTIFICATIONS_CHANNEL_NAME,
                                         NotificationManager.IMPORTANCE_DEFAULT))
 
         notificationManager.notify(0 /* auto-generated */, notificationBuilder.build())
     }
-
 
     private fun buildNotification(sensor: SensorEntity, event: EventEntity): NotificationCompat.Builder =
             NotificationCompat.Builder(this, NOTIFICATIONS_CHANNEL_ID)
@@ -133,4 +137,5 @@ class FirebaseService : FirebaseMessagingService() {
         if (getBooleanPreference(this, PREFERENCES_QUIET_NOTIFICATIONS))
             notificationBuilder.setNotificationSilent()
     }
+
 }

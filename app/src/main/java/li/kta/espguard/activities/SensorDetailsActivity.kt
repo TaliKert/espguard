@@ -12,14 +12,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_sensor_details.*
-import li.kta.espguard.EventAdapter
-import li.kta.espguard.EventViewModel
 import li.kta.espguard.FirebaseService
 import li.kta.espguard.R
+import li.kta.espguard.adapters.EventAdapter
 import li.kta.espguard.room.LocalSensorDb
 import li.kta.espguard.room.SensorEntity
+import li.kta.espguard.viewModels.EventViewModel
 
 class SensorDetailsActivity : AppCompatActivity() {
+
     companion object {
         val TAG: String = SensorDetailsActivity::class.java.name
         const val EXTRA_SENSOR_ID = "sensorId"
@@ -58,33 +59,16 @@ class SensorDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupTextViews(sensor: SensorEntity) {
-        tv_sensor_name.text = resources.getString(R.string.sensor_name_template, sensor.name)
-        tv_sensor_id.text = resources.getString(R.string.sensor_id_template, sensor.deviceId)
-
-        tv_sensor_status.text = resources.getString(
-                R.string.sensor_status_template,
-                resources.getString(sensor.getStatus().textResource))
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar, menu)
+        return true
     }
 
-    private fun setupDetails() {
-        val sensor = getSensorEntity()
-        Log.i(TAG, "Setting up details for $sensor")
-
-        model = ViewModelProvider(this).get(EventViewModel::class.java)
-        model?.deviceId = sensor.deviceId.toString()
-
-        createAdapter()
-
-        setupTextViews(sensor)
-    }
-
-    private fun refreshDetails() {
-        refreshData()
-        setupTextViews(getSensorEntity())
-    }
-
-    private fun getSensorEntity() = LocalSensorDb.getSensorDao(this).findSensorById(id)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+            if (item.itemId == R.id.open_settings) {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            } else super.onOptionsItemSelected(item)
 
     override fun onResume() {
         super.onResume()
@@ -96,6 +80,34 @@ class SensorDetailsActivity : AppCompatActivity() {
         unregisterReceiver(firebaseEventReceiver)
     }
 
+
+    private fun setupDetails() {
+        getSensorEntity(id)?.let { setupDetails(it) }
+    }
+
+    private fun setupDetails(sensor: SensorEntity) {
+        Log.i(TAG, "Setting up details for $sensor")
+
+        model = ViewModelProvider(this).get(EventViewModel::class.java)
+        model?.deviceId = sensor.deviceId.toString()
+
+        createAdapter()
+        setupTextViews(sensor)
+    }
+
+    private fun refreshDetails() {
+        refreshData()
+        getSensorEntity(id)?.let { setupTextViews(it) }
+    }
+
+    private fun setupTextViews(sensor: SensorEntity) {
+        tv_sensor_name.text = resources.getString(R.string.sensor_name_template, sensor.name)
+        tv_sensor_id.text = resources.getString(R.string.sensor_id_template, sensor.deviceId)
+        tv_sensor_status.text = resources.getString(
+                R.string.sensor_status_template,
+                resources.getString(sensor.getStatus().textResource))
+    }
+
     private fun setupFirebaseEventReceiver() {
         firebaseEventReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -104,8 +116,7 @@ class SensorDetailsActivity : AppCompatActivity() {
             }
         }
 
-        registerReceiver(firebaseEventReceiver,
-                         IntentFilter(FirebaseService.STATUS_RESPONSE_ACTION))
+        registerReceiver(firebaseEventReceiver, IntentFilter(FirebaseService.STATUS_RESPONSE_ACTION))
     }
 
     fun refreshData() {
@@ -124,10 +135,6 @@ class SensorDetailsActivity : AppCompatActivity() {
         getSensorEntity(sensorId)?.let { openSensorConfiguration(it) }
     }
 
-    private fun getSensorEntity(sensorId: Int): SensorEntity? {
-        return LocalSensorDb.getSensorDao(applicationContext).findSensorById(sensorId)
-    }
-
 
     private fun openSensorConfiguration(sensor: SensorEntity) {
         Log.i(TAG, "Opening configurations view for sensor $sensor")
@@ -136,17 +143,7 @@ class SensorDetailsActivity : AppCompatActivity() {
                                REQUEST_CODE_CONFIGURATIONS)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_toolbar, menu)
-        return true
-    }
+    private fun getSensorEntity(sensorId: Int): SensorEntity? =
+            LocalSensorDb.getSensorDao(applicationContext).findSensorById(sensorId)
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.open_settings) {
-            startActivity(Intent(this, SettingsActivity::class.java))
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
 }

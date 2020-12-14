@@ -26,16 +26,23 @@ data class SensorEntity(
         SWITCHED_OFF(R.drawable.ic_switched_off_24, R.string.sensor_status_off)
     }
 
+
+    companion object {
+        private const val STATUS_SHOW_FAIL_TIMEOUT: Long = 14
+    }
+
+
     fun getStatus(): Status {
         val last = lastHealthCheck
         val prevSuccess = successfulHealthCheck
 
         if (last == null || prevSuccess == null
-                || prevSuccess.plusSeconds(14).isBefore(ZonedDateTime.now()))
+                || prevSuccess.plusSeconds(STATUS_SHOW_FAIL_TIMEOUT).isBefore(ZonedDateTime.now()))
             return Status.FAILED
 
         if (!last.isBefore(prevSuccess)) return Status.PENDING
 
         return if (turnedOn) Status.HEALTHY else Status.SWITCHED_OFF
     }
+
 }

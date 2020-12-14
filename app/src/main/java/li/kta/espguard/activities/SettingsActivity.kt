@@ -14,6 +14,7 @@ import li.kta.espguard.room.LocalSensorDb
 
 
 class SettingsActivity : AppCompatActivity() {
+
     companion object {
         private val TAG: String = SettingsActivity::class.java.name
 
@@ -32,12 +33,16 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        fun getBooleanPreference(context: Context, pref: String) =
+        fun getBooleanPreference(context: Context, pref: String): Boolean =
                 getSharedPreferences(context).getBoolean(pref, false)
+
+        fun getSharedPreferencesEditor(context: Context): SharedPreferences.Editor =
+                getSharedPreferences(context).edit()
 
         fun getSharedPreferences(context: Context): SharedPreferences =
                 context.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(this)
@@ -49,12 +54,6 @@ class SettingsActivity : AppCompatActivity() {
         setupButtons()
     }
 
-    private fun setupButtons(): Unit = listOf(
-            button_switch_theme to ::toggleThemeSwitch,
-            switch_ignore_notifications to ::toggleIgnoreSwitch,
-            switch_quiet_notifications to ::toggleQuietSwitch,
-            button_clear_events to ::clearEvents
-    ).forEach { (button, action) -> button.setOnClickListener { action() } }
 
     private fun loadSwitchValues() {
         switch_quiet_notifications.isChecked = getBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
@@ -62,12 +61,12 @@ class SettingsActivity : AppCompatActivity() {
                 getBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
     }
 
-    private fun toggleQuietSwitch() = invertBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
-
-    private fun toggleIgnoreSwitch() = invertBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
-
-    private fun clearEvents(): Unit = LocalSensorDb.getEventDao(this).nukeTable()
-
+    private fun setupButtons(): Unit = listOf(
+            button_switch_theme to ::toggleThemeSwitch,
+            switch_ignore_notifications to ::toggleIgnoreSwitch,
+            switch_quiet_notifications to ::toggleQuietSwitch,
+            button_clear_events to ::clearEvents
+    ).forEach { (button, action) -> button.setOnClickListener { action() } }
 
     private fun toggleThemeSwitch() {
         invertBooleanPreference(PREFERENCES_DARK_THEME)
@@ -79,7 +78,15 @@ class SettingsActivity : AppCompatActivity() {
         it.apply()
     }
 
+    private fun toggleIgnoreSwitch(): Unit = invertBooleanPreference(PREFERENCES_IGNORE_NOTIFICATIONS)
+
+    private fun toggleQuietSwitch(): Unit = invertBooleanPreference(PREFERENCES_QUIET_NOTIFICATIONS)
+
+    private fun clearEvents(): Unit = LocalSensorDb.getEventDao(applicationContext).nukeTable()
+
+
     private fun getBooleanPreference(pref: String) = getBooleanPreference(this, pref)
 
-    private fun getSharedPreferencesEditor() = Companion.getSharedPreferences(this).edit()
+    private fun getSharedPreferencesEditor() = getSharedPreferencesEditor(this)
+
 }

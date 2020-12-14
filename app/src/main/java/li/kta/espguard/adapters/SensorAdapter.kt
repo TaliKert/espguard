@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.adapters
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.sensor_list_item.view.*
+import li.kta.espguard.R
 import li.kta.espguard.room.SensorEntity
 
 class SensorAdapter(private var listener: SensorAdapterListener)
@@ -53,5 +54,6 @@ class SensorAdapter(private var listener: SensorAdapterListener)
     }
 
     fun changeSensorStatusesPending(): Unit = notifyDataSetChanged()
+
 }
 

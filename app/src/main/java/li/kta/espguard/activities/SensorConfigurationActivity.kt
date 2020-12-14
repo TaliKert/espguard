@@ -22,30 +22,41 @@ class SensorConfigurationActivity : AppCompatActivity() {
         const val RESULT_DELETE_SENSOR = 201
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_configure_sensor)
         setSupportActionBar(findViewById(R.id.toolbar_support_configure))
 
-        val sensor = LocalSensorDb.getSensorDao(this)
-                .findSensorById(intent.getIntExtra(EXTRA_SENSOR_ID, -1))
-
-        setupButtons(sensor)
+        findSensorEntity(getExtraSensorId())?.let { sensor -> setupButtons(sensor) }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+            if (item.itemId == R.id.open_settings) {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            } else super.onOptionsItemSelected(item)
+
 
     private fun setupButtons(sensor: SensorEntity) {
         switch_sensor_on.isChecked = sensor.turnedOn
         switch_sensor_on.setOnCheckedChangeListener { _, _ -> toggleOnSwitch(sensor) }
 
+        button_sensor_name_save.setOnClickListener { saveNewName(sensor) }
+
         button_delete_events.setOnClickListener { deleteEvents(sensor) }
         button_delete_device.setOnClickListener { deleteSensor(sensor) }
-
-        button_sensor_name_save.setOnClickListener { saveNewName(sensor) }
     }
 
     private fun toggleOnSwitch(sensor: SensorEntity) {
         sensor.turnedOn = !sensor.turnedOn
-        LocalSensorDb.getSensorDao(this).updateSensorTurnedOn(sensor.turnedOn, sensor.id)
+        LocalSensorDb.getSensorDao(applicationContext)
+                .updateSensorTurnedOn(sensor.turnedOn, sensor.id)
         MqttService.getInstance()?.turnOnOff(sensor)
     }
 
@@ -53,12 +64,12 @@ class SensorConfigurationActivity : AppCompatActivity() {
         val newName = et_sensor_name.text.toString()
 
         if (newName.isEmpty()) {
-            Toast.makeText(this, "Cannot rename to \"\"", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "New name cannot be empty", Toast.LENGTH_SHORT).show()
             return
         }
 
         Log.i(TAG, "Changing name of $sensor to $newName")
-        LocalSensorDb.getSensorDao(this).updateSensorName(newName, sensor.id)
+        LocalSensorDb.getSensorDao(applicationContext).updateSensorName(newName, sensor.id)
 
         Toast.makeText(this, "Renamed sensor to $newName", Toast.LENGTH_SHORT).show()
     }
@@ -90,20 +101,13 @@ class SensorConfigurationActivity : AppCompatActivity() {
         finish()
     }
 
+
+    private fun getExtraSensorId(): Int = intent.getIntExtra(EXTRA_SENSOR_ID, -1)
+
+    private fun findSensorEntity(id: Int): SensorEntity? =
+            LocalSensorDb.getSensorDao(applicationContext).findSensorById(id)
+
     private fun removeSensorFromDatabase(sensor: SensorEntity): Unit =
             LocalSensorDb.getSensorDao(applicationContext).deleteSensor(sensor)
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_toolbar, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.open_settings) {
-            startActivity(Intent(this, SettingsActivity::class.java))
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
 }

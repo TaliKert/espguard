@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.viewModels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -14,6 +14,7 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
     init {
         refresh()
     }
+
 
     fun refresh() {
         sensorArray = sensorDao.loadAllSensors()

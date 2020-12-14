@@ -13,11 +13,13 @@ abstract class LocalSensorDb : RoomDatabase() {
     companion object {
         private lateinit var dbInstance: LocalSensorDb
 
+        private const val DB_NAME = "myDatabase"
+
         @Synchronized
         fun getInstance(context: Context): LocalSensorDb {
             if (this::dbInstance.isInitialized) return dbInstance
 
-            dbInstance = Room.databaseBuilder(context, LocalSensorDb::class.java, "myDatabase")
+            dbInstance = Room.databaseBuilder(context, LocalSensorDb::class.java, DB_NAME)
                     .fallbackToDestructiveMigration() // each time schema changes, data is lost!
                     .allowMainThreadQueries() // if possible, use background thread instead
                     .build()
@@ -30,7 +32,9 @@ abstract class LocalSensorDb : RoomDatabase() {
         fun getEventDao(context: Context): EventDao = getInstance(context).getEventDao()
     }
 
+
     abstract fun getSensorDao(): SensorDao
 
     abstract fun getEventDao(): EventDao
+
 }

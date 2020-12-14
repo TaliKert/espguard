@@ -1,4 +1,4 @@
-package li.kta.espguard
+package li.kta.espguard.viewModels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -16,7 +16,9 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         refresh()
     }
 
+
     fun refresh() {
         eventsArray = eventDao.findEventsByDeviceId(deviceId)
     }
+
 }
