@@ -25,6 +25,7 @@ import li.kta.espguard.viewModels.SensorViewModel
 
 /** TODO
  *    - FINAL TEST STUFF (deletions, renames, lateinit nulls, settings, ...)
+ *    - try to extend empty scrollable area of sensors adapter so the FAB wouldn't cover sensors
  *    - limit selection of characters for Names and IDs
  *    - Use resource files: text values in strings.xml
  *    - colors.xml and styles.xml
